@@ -65,7 +65,7 @@ class _ProfileViewState extends State<ProfileView> {
                       title: Text("? OP AI Personalization", style: AppTypography.label.copyWith(color: colors.textPrimary)),
                       subtitle: Text("Use preferences to tune recommendations", style: AppTypography.caption.copyWith(color: colors.textSecondary)),
                       value: _aiPersonalization,
-                      activeColor: colors.primary,
+                      activeTrackColor: colors.primarySoft, activeThumbColor: colors.primary,
                       onChanged: (v) => setState(() => _aiPersonalization = v),
                     ),
                   ],

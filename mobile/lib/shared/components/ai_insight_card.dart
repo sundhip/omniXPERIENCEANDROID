@@ -23,20 +23,13 @@ class AIInsightCard extends StatelessWidget {
     final colors = context.colors;
     return AppCard(
       backgroundColor: colors.surfaceTint,
-      border: Border.all(color: colors.lavender.withOpacity(0.4), width: 1.2),
+      border: Border.all(color: colors.lavender.withValues(alpha: 0.4), width: 1.2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text(
-                '?',
-                style: TextStyle(
-                  color: colors.primary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Icon(Icons.auto_awesome, color: colors.primary, size: 18),
               const SizedBox(width: 8),
               Text(
                 title,
@@ -59,7 +52,7 @@ class AIInsightCard extends StatelessWidget {
             GestureDetector(
               onTap: onAction,
               child: Text(
-                '$actionLabel ?',
+                '$actionLabel',
                 style: AppTypography.label.copyWith(
                   color: colors.primary,
                   fontWeight: FontWeight.w600,

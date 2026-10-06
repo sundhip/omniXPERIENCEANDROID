@@ -71,7 +71,7 @@ class _AddItemViewState extends State<AddItemView> {
                       Icon(Icons.camera_alt_outlined, size: 36, color: colors.primary),
                       const SizedBox(height: 8),
                       Text(
-                        _isAiDetecting ? "? OP AI Analyzing garment..." : "+ Add Photo / Scan Garment",
+                        _isAiDetecting ? "OP AI Analyzing garment..." : "+ Add Photo / Scan Garment",
                         style: AppTypography.label.copyWith(
                           color: colors.primary,
                           fontWeight: FontWeight.w600,
@@ -88,11 +88,11 @@ class _AddItemViewState extends State<AddItemView> {
                 decoration: BoxDecoration(
                   color: colors.surfaceTint,
                   borderRadius: BorderRadius.circular(AppGeometry.radiusSmall),
-                  border: Border.all(color: colors.lavender.withOpacity(0.5)),
+                  border: Border.all(color: colors.lavender.withValues(alpha: 0.5)),
                 ),
                 child: Row(
                   children: [
-                    Text('?', style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold)),
+                    Icon(Icons.auto_awesome, color: colors.primary, size: 18),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(

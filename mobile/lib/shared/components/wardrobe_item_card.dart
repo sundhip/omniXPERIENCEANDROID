@@ -41,7 +41,7 @@ class WardrobeItemCard extends StatelessWidget {
                   Icon(
                     _getCategoryIcon(item.category),
                     size: 36,
-                    color: colors.textSecondary.withOpacity(0.5),
+                    color: colors.textSecondary.withValues(alpha: 0.5),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -88,7 +88,7 @@ class WardrobeItemCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: colors.warning.withOpacity(0.15),
+                          color: colors.warning.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(

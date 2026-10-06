@@ -45,7 +45,7 @@ class _LoginViewState extends State<LoginView> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text('?', style: TextStyle(color: colors.primary, fontSize: 36)),
+                    Icon(Icons.auto_awesome, color: colors.primary, size: 38),
                     const SizedBox(height: AppGeometry.gapSmall),
                     Text(
                       'OMNIPRESENCE',

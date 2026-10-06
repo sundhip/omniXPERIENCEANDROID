@@ -89,7 +89,7 @@ class _RecommendationViewState extends State<RecommendationView> {
             children: [
               Row(
                 children: [
-                  Text('?', style: TextStyle(color: colors.primary, fontSize: 20, fontWeight: FontWeight.bold)),
+                  Icon(Icons.auto_awesome, color: colors.primary, size: 22),
                   const SizedBox(width: 8),
                   Text('Recommended for You', style: AppTypography.h2.copyWith(color: colors.textPrimary)),
                 ],
@@ -108,7 +108,7 @@ class _RecommendationViewState extends State<RecommendationView> {
                         borderRadius: BorderRadius.circular(AppGeometry.radiusCard - 2),
                       ),
                       child: Center(
-                        child: Icon(Icons.checkroom, size: 64, color: colors.primary.withOpacity(0.8)),
+                        child: Icon(Icons.checkroom, size: 64, color: colors.primary.withValues(alpha: 0.8)),
                       ),
                     ),
                     const SizedBox(height: AppGeometry.gapNormal),
@@ -119,7 +119,7 @@ class _RecommendationViewState extends State<RecommendationView> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: colors.success.withOpacity(0.15),
+                            color: colors.success.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(

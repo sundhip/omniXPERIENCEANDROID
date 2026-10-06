@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class AppGeometry {
   static const double screenPadding = 16.0;
   static const double sectionPadding = 24.0;

@@ -54,3 +54,13 @@ venv/
 .idea/
 .vscode/
 
+
+# Flutter / Android
+**/mobile/build/
+**/mobile/.dart_tool/
+**/mobile/.flutter-plugins
+**/mobile/.flutter-plugins-dependencies
+**/mobile/android/.gradle/
+**/mobile/android/local.properties
+**/mobile/android/app/build/
+

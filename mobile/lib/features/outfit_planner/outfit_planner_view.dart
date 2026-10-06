@@ -51,7 +51,8 @@ class OutfitPlannerView extends StatelessWidget {
               _buildSlotCard("SHOES", "Minimal White Sneakers", "Casual ? Italian Leather", Icons.roller_skating, colors),
               const SizedBox(height: AppGeometry.gapLarge),
               AppButton(
-                label: '? Ask OP AI for Recommendation',
+                label: 'Ask OP AI for Recommendation',
+                icon: const Icon(Icons.auto_awesome, size: 18, color: Colors.white),
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const RecommendationView()));
                 },

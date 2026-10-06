@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
-import 'app_typography.dart';
-import 'app_geometry.dart';
 
 @immutable
 class AppSemanticColors extends ThemeExtension<AppSemanticColors> {

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/theme/app_geometry.dart';
-import '../../core/theme/app_typography.dart';
 import '../../shared/components/state_banners.dart';
 import '../wardrobe/wardrobe_view.dart';
 import '../outfit_planner/outfit_planner_view.dart';
@@ -68,7 +66,7 @@ class _AppShellState extends State<AppShell> {
                   color: colors.primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Text('?', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
               ),
               label: 'OP AI',
             ),

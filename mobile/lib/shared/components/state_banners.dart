@@ -13,7 +13,7 @@ class OfflineBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      color: colors.warning.withOpacity(0.15),
+      color: colors.warning.withValues(alpha: 0.15),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -57,7 +57,7 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 56, color: colors.textMuted.withOpacity(0.6)),
+            Icon(icon, size: 56, color: colors.textMuted.withValues(alpha: 0.6)),
             const SizedBox(height: AppGeometry.gapNormal),
             Text(
               title,

@@ -164,7 +164,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                       Text("Allow Personalization", style: AppTypography.label.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w600)),
                       Switch(
                         value: _aiConsentGranted,
-                        activeColor: colors.primary,
+                        activeTrackColor: colors.primarySoft, activeThumbColor: colors.primary,
                         onChanged: (val) => setState(() => _aiConsentGranted = val),
                       ),
                     ],

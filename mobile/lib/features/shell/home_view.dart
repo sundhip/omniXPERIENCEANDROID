@@ -4,7 +4,6 @@ import '../../core/theme/app_geometry.dart';
 import '../../core/theme/app_typography.dart';
 import '../../shared/components/app_card.dart';
 import '../../shared/components/ai_insight_card.dart';
-import '../../shared/components/app_button.dart';
 
 class HomeView extends StatelessWidget {
   final VoidCallback onExploreWardrobe;
@@ -75,7 +74,7 @@ class HomeView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("?", style: TextStyle(color: colors.primary, fontSize: 24)),
+                      Icon(Icons.auto_awesome, color: colors.primary, size: 24),
                       const SizedBox(height: 8),
                       Text("Get Outfit", style: AppTypography.label.copyWith(fontWeight: FontWeight.w600, color: colors.textPrimary)),
                       Text("Personalized AI pick", style: AppTypography.caption.copyWith(color: colors.textSecondary)),

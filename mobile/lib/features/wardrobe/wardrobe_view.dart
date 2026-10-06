@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_geometry.dart';
 import '../../core/theme/app_typography.dart';
-import '../../shared/components/search_field.dart';
+import '../../shared/components/app_text_field.dart';
 import '../../shared/components/filter_chip.dart';
 import '../../shared/components/wardrobe_item_card.dart';
 import '../../shared/components/state_banners.dart';

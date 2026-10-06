@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/theme/app_geometry.dart';
 import '../../core/theme/app_typography.dart';
 
 class SemanticFilterChip extends StatelessWidget {
