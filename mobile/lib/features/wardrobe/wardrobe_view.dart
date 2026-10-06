@@ -12,7 +12,7 @@ import 'add_item_view.dart';
 import 'item_detail_view.dart';
 
 class WardrobeView extends StatelessWidget {
-  const WardrobeView({Key? key}) : super(key: key);
+  const WardrobeView({super.key});
 
   final List<String> categories = const ['All', 'Tops', 'Bottoms', 'Footwear', 'Outerwear'];
 

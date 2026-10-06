@@ -9,11 +9,9 @@ class WardrobeItemCard extends StatelessWidget {
   final WardrobeItemModel item;
   final VoidCallback? onTap;
 
-  const WardrobeItemCard({
-    Key? key,
-    required this.item,
+  const WardrobeItemCard({super.key, required this.item,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +66,7 @@ class WardrobeItemCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${item.subcategory} ? ${item.formality}',
+                  '${item.subcategory} • ${item.formality}',
                   style: AppTypography.caption.copyWith(color: colors.textSecondary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

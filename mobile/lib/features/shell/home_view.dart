@@ -9,11 +9,9 @@ class HomeView extends StatelessWidget {
   final VoidCallback onExploreWardrobe;
   final VoidCallback onAskOPAI;
 
-  const HomeView({
-    Key? key,
-    required this.onExploreWardrobe,
+  const HomeView({super.key, required this.onExploreWardrobe,
     required this.onAskOPAI,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +43,7 @@ class HomeView extends StatelessWidget {
                   children: [
                     Icon(Icons.wb_sunny_outlined, size: 16, color: colors.warning),
                     const SizedBox(width: 6),
-                    Text("28?C ? Clear", style: AppTypography.label.copyWith(color: colors.textPrimary)),
+                    Text("28°C • Clear", style: AppTypography.label.copyWith(color: colors.textPrimary)),
                   ],
                 ),
               ),

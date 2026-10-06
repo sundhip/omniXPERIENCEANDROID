@@ -7,12 +7,10 @@ class SemanticFilterChip extends StatelessWidget {
   final bool isSelected;
   final ValueChanged<bool>? onSelected;
 
-  const SemanticFilterChip({
-    Key? key,
-    required this.label,
+  const SemanticFilterChip({super.key, required this.label,
     required this.isSelected,
     this.onSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

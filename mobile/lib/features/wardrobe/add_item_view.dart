@@ -11,7 +11,7 @@ import '../../shared/components/app_card.dart';
 import 'wardrobe_bloc.dart';
 
 class AddItemView extends StatefulWidget {
-  const AddItemView({Key? key}) : super(key: key);
+  const AddItemView({super.key});
 
   @override
   State<AddItemView> createState() => _AddItemViewState();
@@ -50,7 +50,7 @@ class _AddItemViewState extends State<AddItemView> {
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        title: Text('Add Item', style: AppTypography.h3),
+        title: const Text('Add Item', style: AppTypography.h3),
         backgroundColor: colors.background,
       ),
       body: SafeArea(

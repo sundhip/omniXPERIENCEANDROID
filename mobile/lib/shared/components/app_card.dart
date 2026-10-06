@@ -9,14 +9,12 @@ class AppCard extends StatelessWidget {
   final VoidCallback? onTap;
   final Border? border;
 
-  const AppCard({
-    Key? key,
-    required this.child,
+  const AppCard({super.key, required this.child,
     this.padding,
     this.backgroundColor,
     this.onTap,
     this.border,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

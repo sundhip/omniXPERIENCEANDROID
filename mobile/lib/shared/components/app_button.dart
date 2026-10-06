@@ -10,14 +10,12 @@ class AppButton extends StatelessWidget {
   final Widget? icon;
   final double? width;
 
-  const AppButton({
-    Key? key,
-    required this.label,
+  const AppButton({super.key, required this.label,
     this.onPressed,
     this.isLoading = false,
     this.icon,
     this.width,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -67,13 +65,11 @@ class SecondaryButton extends StatelessWidget {
   final Widget? icon;
   final double? width;
 
-  const SecondaryButton({
-    Key? key,
-    required this.label,
+  const SecondaryButton({super.key, required this.label,
     this.onPressed,
     this.icon,
     this.width,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

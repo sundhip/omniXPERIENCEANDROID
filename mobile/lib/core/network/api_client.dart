@@ -16,15 +16,48 @@ class ApiClient {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await SecureStorage.getToken();
-        if (token != null) {
+        if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
         }
         return handler.next(options);
       },
       onError: (DioException e, handler) {
-        // Log & pass error
         return handler.next(e);
       },
     ));
+  }
+
+  static String getErrorMessage(dynamic error) {
+    if (error is DioException) {
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+        case DioExceptionType.connectionError:
+          return 'Unable to connect to the server. Please check your internet connection and try again.';
+        case DioExceptionType.badResponse:
+          final statusCode = error.response?.statusCode;
+          final data = error.response?.data;
+          String? serverDetail;
+          if (data is Map && data.containsKey('detail')) {
+            serverDetail = data['detail'].toString();
+          }
+          if (statusCode == 401) {
+            return serverDetail ?? 'Invalid email or password. Please try again.';
+          } else if (statusCode == 400) {
+            return serverDetail ?? 'Invalid request. Please check your inputs.';
+          } else if (statusCode == 404) {
+            return serverDetail ?? 'The requested resource was not found.';
+          } else if (statusCode != null && statusCode >= 500) {
+            return 'Server error occurred ($statusCode). Please try again shortly.';
+          }
+          return serverDetail ?? 'Request failed with status code $statusCode.';
+        case DioExceptionType.cancel:
+          return 'Request was cancelled.';
+        default:
+          return 'Network error occurred. Please check your connection.';
+      }
+    }
+    return error?.toString() ?? 'An unexpected error occurred.';
   }
 }

@@ -13,9 +13,7 @@ class AppTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final ValueChanged<String>? onChanged;
 
-  const AppTextField({
-    Key? key,
-    required this.label,
+  const AppTextField({super.key, required this.label,
     this.hint,
     this.controller,
     this.obscureText = false,
@@ -23,7 +21,7 @@ class AppTextField extends StatelessWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -74,13 +72,11 @@ class SearchField extends StatelessWidget {
   final VoidCallback? onClear;
   final TextEditingController? controller;
 
-  const SearchField({
-    Key? key,
-    this.hint = 'Search wardrobe...',
+  const SearchField({super.key, this.hint = 'Search wardrobe...',
     this.onChanged,
     this.onClear,
     this.controller,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

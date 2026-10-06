@@ -4,16 +4,17 @@ import '../../core/theme/app_geometry.dart';
 import '../../core/theme/app_typography.dart';
 import '../../shared/components/app_card.dart';
 import '../../shared/components/app_button.dart';
-import '../../shared/components/ai_insight_card.dart';
 
 class RecommendationView extends StatefulWidget {
-  const RecommendationView({Key? key}) : super(key: key);
+  const RecommendationView({super.key});
 
   @override
   State<RecommendationView> createState() => _RecommendationViewState();
 }
 
 class _RecommendationViewState extends State<RecommendationView> {
+  bool _feedbackSubmitted = false;
+
   void _showFeedbackModal() {
     showModalBottomSheet(
       context: context,
@@ -31,14 +32,14 @@ class _RecommendationViewState extends State<RecommendationView> {
             children: [
               Text('How was this outfit pick?', style: AppTypography.h3.copyWith(color: colors.textPrimary)),
               const SizedBox(height: 8),
-              Text('Your feedback tunes your personal scoring weights.', style: AppTypography.body.copyWith(color: colors.textSecondary)),
+              Text('Your feedback will calibrate personal scoring weights.', style: AppTypography.body.copyWith(color: colors.textSecondary)),
               const SizedBox(height: AppGeometry.gapLarge),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _feedbackPill("Loved it", "??", colors),
-                  _feedbackPill("Fine", "??", colors),
-                  _feedbackPill("Not for me", "??", colors),
+                  _feedbackPill("Loved it", "★", colors),
+                  _feedbackPill("Fine", "•", colors),
+                  _feedbackPill("Not for me", "✕", colors),
                 ],
               ),
               const SizedBox(height: AppGeometry.gapLarge),
@@ -46,8 +47,9 @@ class _RecommendationViewState extends State<RecommendationView> {
                 label: 'Submit Feedback',
                 onPressed: () {
                   Navigator.pop(ctx);
+                  setState(() => _feedbackSubmitted = true);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('? Personalization signals updated')),
+                    const SnackBar(content: Text('Feedback recorded for recommendation engine')),
                   );
                 },
               ),
@@ -58,7 +60,7 @@ class _RecommendationViewState extends State<RecommendationView> {
     );
   }
 
-  Widget _feedbackPill(String label, String emoji, AppSemanticColors colors) {
+  Widget _feedbackPill(String label, String iconText, AppSemanticColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
@@ -68,7 +70,7 @@ class _RecommendationViewState extends State<RecommendationView> {
       ),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 16)),
+          Text(iconText, style: TextStyle(fontSize: 16, color: colors.primary)),
           const SizedBox(width: 6),
           Text(label, style: AppTypography.label.copyWith(color: colors.textPrimary)),
         ],
@@ -81,6 +83,10 @@ class _RecommendationViewState extends State<RecommendationView> {
     final colors = context.colors;
     return Scaffold(
       backgroundColor: colors.background,
+      appBar: AppBar(
+        title: const Text('Recommendations'),
+        backgroundColor: colors.background,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppGeometry.screenPadding),
@@ -91,79 +97,77 @@ class _RecommendationViewState extends State<RecommendationView> {
                 children: [
                   Icon(Icons.auto_awesome, color: colors.primary, size: 22),
                   const SizedBox(width: 8),
-                  Text('Recommended for You', style: AppTypography.h2.copyWith(color: colors.textPrimary)),
+                  Text('Curated for Today', style: AppTypography.h2.copyWith(color: colors.textPrimary)),
                 ],
               ),
-              Text('Dinner ? 28?C ? Clear', style: AppTypography.body.copyWith(color: colors.textSecondary)),
+              Text('Dinner • 28°C • Clear Sky', style: AppTypography.body.copyWith(color: colors.textSecondary)),
               const SizedBox(height: AppGeometry.gapLarge),
               AppCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      height: 160,
-                      width: double.infinity,
+                      height: 180,
                       decoration: BoxDecoration(
                         color: colors.surfaceSoft,
-                        borderRadius: BorderRadius.circular(AppGeometry.radiusCard - 2),
+                        borderRadius: BorderRadius.circular(AppGeometry.radiusCard),
                       ),
                       child: Center(
-                        child: Icon(Icons.checkroom, size: 64, color: colors.primary.withValues(alpha: 0.8)),
+                        child: Icon(Icons.checkroom, size: 72, color: colors.primary),
                       ),
                     ),
                     const SizedBox(height: AppGeometry.gapNormal),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Curated Ensemble', style: AppTypography.h3.copyWith(color: colors.textPrimary)),
+                        Text('Sample Baseline Ensemble', style: AppTypography.h3.copyWith(color: colors.textPrimary)),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: colors.success.withValues(alpha: 0.15),
+                            color: colors.primarySoft,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            '92% Match',
-                            style: AppTypography.caption.copyWith(color: colors.success, fontWeight: FontWeight.bold),
-                          ),
+                          child: Text('92% Match', style: AppTypography.caption.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text('? White Oxford Shirt', style: AppTypography.body.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w500)),
-                    Text('? Navy Slim Trousers', style: AppTypography.body.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w500)),
-                    Text('? Minimalist White Low-Tops', style: AppTypography.body.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w500)),
+                    Text('• White Oxford Shirt', style: AppTypography.body.copyWith(color: colors.textSecondary)),
+                    Text('• Navy Slim Trousers', style: AppTypography.body.copyWith(color: colors.textSecondary)),
+                    Text('• Minimalist White Low-Tops', style: AppTypography.body.copyWith(color: colors.textSecondary)),
                   ],
                 ),
               ),
               const SizedBox(height: AppGeometry.gapLarge),
-              const AIInsightCard(
-                title: "Why this works",
-                message: "Fits the dinner occasion, suits today's 28?C clear evening, and brings forward versatile pieces you haven't worn in 3 weeks.",
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.lightbulb_outline, color: colors.primary, size: 20),
+                        const SizedBox(width: 8),
+                        Text('Phase 0 Foundation Note', style: AppTypography.label.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Full multimodal Gemini outfit intelligence is slated for Phase 1. This preview uses the deterministic scoring engine rules to balance rotation frequency and occasion.',
+                      style: AppTypography.body.copyWith(color: colors.textSecondary),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: AppGeometry.gapLarge),
               AppButton(
-                label: 'Wear This',
+                label: _feedbackSubmitted ? '✓ Ensemble Logged' : 'Wear This Outfit',
                 icon: const Icon(Icons.check, size: 18),
                 onPressed: _showFeedbackModal,
               ),
               const SizedBox(height: AppGeometry.gapSmall),
-              Row(
-                children: [
-                  Expanded(
-                    child: SecondaryButton(
-                      label: 'Change Items',
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-                  const SizedBox(width: AppGeometry.gapSmall),
-                  Expanded(
-                    child: SecondaryButton(
-                      label: 'Not For Me',
-                      onPressed: _showFeedbackModal,
-                    ),
-                  ),
-                ],
+              SecondaryButton(
+                label: 'Provide Feedback',
+                onPressed: _showFeedbackModal,
               ),
             ],
           ),

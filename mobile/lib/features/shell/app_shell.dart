@@ -8,7 +8,7 @@ import '../profile/profile_view.dart';
 import 'home_view.dart';
 
 class AppShell extends StatefulWidget {
-  const AppShell({Key? key}) : super(key: key);
+  const AppShell({super.key});
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -16,7 +16,7 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
-  bool _isOffline = false;
+  final bool _isOffline = false;
 
   @override
   Widget build(BuildContext context) {

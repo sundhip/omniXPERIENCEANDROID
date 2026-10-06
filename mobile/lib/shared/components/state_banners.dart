@@ -5,7 +5,7 @@ import '../../core/theme/app_typography.dart';
 import 'app_button.dart';
 
 class OfflineBanner extends StatelessWidget {
-  const OfflineBanner({Key? key}) : super(key: key);
+  const OfflineBanner({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +32,51 @@ class OfflineBanner extends StatelessWidget {
   }
 }
 
+class ErrorBanner extends StatelessWidget {
+  final String message;
+  final VoidCallback? onDismiss;
+
+  const ErrorBanner({
+    super.key,
+    required this.message,
+    this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: colors.error.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppGeometry.radiusInput),
+        border: Border.all(color: colors.error.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: colors.error, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTypography.caption.copyWith(
+                color: colors.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          if (onDismiss != null)
+            GestureDetector(
+              onTap: onDismiss,
+              child: Icon(Icons.close, color: colors.error, size: 18),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class EmptyState extends StatelessWidget {
   final String title;
   final String message;
@@ -40,13 +85,13 @@ class EmptyState extends StatelessWidget {
   final IconData icon;
 
   const EmptyState({
-    Key? key,
+    super.key,
     required this.title,
     required this.message,
     this.buttonLabel,
     this.onAction,
     this.icon = Icons.inventory_2_outlined,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -86,10 +131,10 @@ class ErrorState extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const ErrorState({
-    Key? key,
+    super.key,
     required this.message,
     this.onRetry,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -129,11 +174,11 @@ class LoadingSkeleton extends StatelessWidget {
   final double borderRadius;
 
   const LoadingSkeleton({
-    Key? key,
+    super.key,
     this.height = 80,
     this.width,
     this.borderRadius = AppGeometry.radiusCard,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

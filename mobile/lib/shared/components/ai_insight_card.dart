@@ -10,13 +10,11 @@ class AIInsightCard extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
 
-  const AIInsightCard({
-    Key? key,
-    required this.title,
+  const AIInsightCard({super.key, required this.title,
     required this.message,
     this.actionLabel,
     this.onAction,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

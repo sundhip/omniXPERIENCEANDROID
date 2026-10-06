@@ -11,18 +11,55 @@ import 'wardrobe_bloc.dart';
 class ItemDetailView extends StatelessWidget {
   final WardrobeItemModel item;
 
-  const ItemDetailView({Key? key, required this.item}) : super(key: key);
+  const ItemDetailView({super.key, required this.item});
+
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Remove Item'),
+          content: Text('Are you sure you want to remove "${item.name}" from your wardrobe?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.read<WardrobeBloc>().add(DeleteItemRequested(item.id));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Removed "${item.name}" from wardrobe')),
+                );
+                Navigator.pop(context);
+              },
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final costPerWear = item.wearCount > 0 ? (item.purchasePrice / item.wearCount).toStringAsFixed(2) : item.purchasePrice.toStringAsFixed(2);
+    final costPerWear = item.wearCount > 0
+        ? (item.purchasePrice / item.wearCount).toStringAsFixed(2)
+        : item.purchasePrice.toStringAsFixed(2);
 
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
         title: Text(item.name, style: AppTypography.h3),
         backgroundColor: colors.background,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            onPressed: () => _showDeleteDialog(context),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -45,7 +82,7 @@ class ItemDetailView extends StatelessWidget {
                       Icon(Icons.checkroom, size: 64, color: colors.primary),
                       const SizedBox(height: 8),
                       Text(item.name, style: AppTypography.h3.copyWith(color: colors.textPrimary)),
-                      Text('${item.subcategory} ? ${item.formality}', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                      Text('${item.subcategory} • ${item.formality}', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
                     ],
                   ),
                 ),
@@ -86,11 +123,9 @@ class ItemDetailView extends StatelessWidget {
               AppCard(
                 child: Column(
                   children: [
-                    _buildHistoryRow("Aug 27", "Business Meeting", colors),
+                    _buildHistoryRow("Recent", "Daily rotation", colors),
                     const Divider(height: 16),
-                    _buildHistoryRow("Aug 20", "Dinner with friends", colors),
-                    const Divider(height: 16),
-                    _buildHistoryRow("Aug 14", "Office", colors),
+                    _buildHistoryRow("Last logged", item.lastWornDate != null ? item.lastWornDate!.toIso8601String().substring(0, 10) : "Never", colors),
                   ],
                 ),
               ),
@@ -101,10 +136,15 @@ class ItemDetailView extends StatelessWidget {
                 onPressed: () {
                   context.read<WardrobeBloc>().add(MarkItemAsWornRequested(item.id, "Daily wear"));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('? Marked ${item.name} as worn')),
+                    SnackBar(content: Text('Marked "${item.name}" as worn')),
                   );
                   Navigator.pop(context);
                 },
+              ),
+              const SizedBox(height: AppGeometry.gapNormal),
+              SecondaryButton(
+                label: 'Remove Item',
+                onPressed: () => _showDeleteDialog(context),
               ),
             ],
           ),

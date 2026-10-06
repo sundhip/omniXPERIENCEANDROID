@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme/app_theme.dart';
 import 'core/network/api_client.dart';
+import 'core/storage/secure_storage.dart';
 import 'core/sync/sync_engine.dart';
 import 'features/auth/auth_bloc.dart';
 import 'features/auth/login_view.dart';
+import 'features/auth/register_view.dart';
 import 'features/onboarding/onboarding_view.dart';
 import 'features/wardrobe/wardrobe_bloc.dart';
 import 'features/shell/app_shell.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final apiClient = ApiClient();
   final syncEngine = SyncEngine(apiClient: apiClient);
@@ -25,17 +27,45 @@ class OmniPresenceApp extends StatefulWidget {
   final SyncEngine syncEngine;
 
   const OmniPresenceApp({
-    Key? key,
+    super.key,
     required this.apiClient,
     required this.syncEngine,
-  }) : super(key: key);
+  }) : super();
 
   @override
   State<OmniPresenceApp> createState() => _OmniPresenceAppState();
 }
 
 class _OmniPresenceAppState extends State<OmniPresenceApp> {
-  bool _hasCompletedOnboarding = true;
+  bool _hasCompletedOnboarding = false;
+  bool _isCheckingOnboarding = true;
+  bool _isInitialSessionCheck = true;
+  bool _showRegister = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkInitialOnboardingState();
+  }
+
+  Future<void> _checkInitialOnboardingState() async {
+    final completed = await SecureStorage.isOnboardingCompleted();
+    if (mounted) {
+      setState(() {
+        _hasCompletedOnboarding = completed;
+        _isCheckingOnboarding = false;
+      });
+    }
+  }
+
+  void _onOnboardingComplete() async {
+    await SecureStorage.setOnboardingCompleted(true);
+    if (mounted) {
+      setState(() {
+        _hasCompletedOnboarding = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +75,10 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
           create: (_) => AuthBloc(apiClient: widget.apiClient)..add(SessionCheckRequested()),
         ),
         BlocProvider<WardrobeBloc>(
-          create: (_) => WardrobeBloc(apiClient: widget.apiClient, syncEngine: widget.syncEngine)..add(LoadWardrobeRequested()),
+          create: (_) => WardrobeBloc(
+            apiClient: widget.apiClient,
+            syncEngine: widget.syncEngine,
+          )..add(LoadWardrobeRequested()),
         ),
       ],
       child: MaterialApp(
@@ -54,22 +87,54 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            if (state is Authenticated) {
-              if (!_hasCompletedOnboarding) {
-                return OnboardingView(
-                  onComplete: () => setState(() => _hasCompletedOnboarding = true),
-                );
-              }
-              return const AppShell();
-            }
-            return LoginView(
-              onNavigateToRegister: () {},
-              onLoginSuccess: () => setState(() => _hasCompletedOnboarding = true),
-            );
-          },
-        ),
+        home: _isCheckingOnboarding
+            ? const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              )
+            : BlocConsumer<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  if (_isInitialSessionCheck && state is! AuthInitial && state is! AuthLoading) {
+                    setState(() => _isInitialSessionCheck = false);
+                  }
+                  if (state is Authenticated) {
+                    _checkInitialOnboardingState();
+                  }
+                },
+                builder: (context, state) {
+                  // Only show full splash during first-time cold startup session restore
+                  if (_isInitialSessionCheck && state is AuthLoading) {
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  if (state is Authenticated) {
+                    if (!_hasCompletedOnboarding) {
+                      return OnboardingView(
+                        onComplete: _onOnboardingComplete,
+                      );
+                    }
+                    return const AppShell();
+                  }
+
+                  if (_showRegister) {
+                    return RegisterView(
+                      onNavigateToLogin: () => setState(() => _showRegister = false),
+                      onRegisterSuccess: () {
+                        setState(() => _showRegister = false);
+                        _checkInitialOnboardingState();
+                      },
+                    );
+                  }
+
+                  return LoginView(
+                    onNavigateToRegister: () => setState(() => _showRegister = true),
+                    onLoginSuccess: () {
+                      _checkInitialOnboardingState();
+                    },
+                  );
+                },
+              ),
       ),
     );
   }

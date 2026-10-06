@@ -6,8 +6,15 @@ import '../../shared/components/app_button.dart';
 import '../../shared/components/app_card.dart';
 import '../recommendations/recommendation_view.dart';
 
-class OutfitPlannerView extends StatelessWidget {
-  const OutfitPlannerView({Key? key}) : super(key: key);
+class OutfitPlannerView extends StatefulWidget {
+  const OutfitPlannerView({super.key});
+
+  @override
+  State<OutfitPlannerView> createState() => _OutfitPlannerViewState();
+}
+
+class _OutfitPlannerViewState extends State<OutfitPlannerView> {
+  bool _isSaved = false;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +29,7 @@ class OutfitPlannerView extends StatelessWidget {
             children: [
               Text('Plan Outfit', style: AppTypography.h2.copyWith(color: colors.textPrimary)),
               const SizedBox(height: 4),
-              Text('Saturday, Sep 5 ? Dinner Event', style: AppTypography.body.copyWith(color: colors.textSecondary)),
+              Text('Evening Event • Contextual Ensemble', style: AppTypography.body.copyWith(color: colors.textSecondary)),
               const SizedBox(height: AppGeometry.gapNormal),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -35,20 +42,20 @@ class OutfitPlannerView extends StatelessWidget {
                   children: [
                     Icon(Icons.wb_sunny_outlined, color: colors.warning, size: 20),
                     const SizedBox(width: 8),
-                    Text("28?C ? Clear Sky (10% Rain)", style: AppTypography.label.copyWith(color: colors.textPrimary)),
+                    Text("28°C • Clear Sky (10% Rain)", style: AppTypography.label.copyWith(color: colors.textPrimary)),
                   ],
                 ),
               ),
               const SizedBox(height: AppGeometry.gapLarge),
-              _buildSlotCard("SHIRT", "White Oxford Shirt", "Smart Casual ? 100% Cotton", Icons.checkroom, colors),
+              _buildSlotCard("SHIRT", "White Oxford Shirt", "Smart Casual • 100% Cotton", Icons.checkroom, colors),
               const SizedBox(height: AppGeometry.gapSmall),
-              Center(child: Text("+", style: TextStyle(color: colors.textMuted, fontSize: 18))),
+              Center(child: Icon(Icons.add, color: colors.textMuted, size: 20)),
               const SizedBox(height: AppGeometry.gapSmall),
-              _buildSlotCard("PANTS", "Navy Slim Trousers", "Smart Casual ? Stretch Cotton", Icons.dry_cleaning, colors),
+              _buildSlotCard("PANTS", "Navy Slim Trousers", "Smart Casual • Stretch Cotton", Icons.dry_cleaning, colors),
               const SizedBox(height: AppGeometry.gapSmall),
-              Center(child: Text("+", style: TextStyle(color: colors.textMuted, fontSize: 18))),
+              Center(child: Icon(Icons.add, color: colors.textMuted, size: 20)),
               const SizedBox(height: AppGeometry.gapSmall),
-              _buildSlotCard("SHOES", "Minimal White Sneakers", "Casual ? Italian Leather", Icons.roller_skating, colors),
+              _buildSlotCard("SHOES", "Minimal White Sneakers", "Casual • Italian Leather", Icons.roller_skating, colors),
               const SizedBox(height: AppGeometry.gapLarge),
               AppButton(
                 label: 'Ask OP AI for Recommendation',
@@ -59,10 +66,11 @@ class OutfitPlannerView extends StatelessWidget {
               ),
               const SizedBox(height: AppGeometry.gapSmall),
               SecondaryButton(
-                label: 'Save Planned Outfit',
+                label: _isSaved ? '✓ Outfit Saved' : 'Save Planned Outfit',
                 onPressed: () {
+                  setState(() => _isSaved = true);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('? Outfit saved to calendar')),
+                    const SnackBar(content: Text('Outfit saved to your calendar schedule')),
                   );
                 },
               ),
