@@ -99,25 +99,19 @@ class _ProfileViewState extends State<ProfileView> {
             }
           },
           builder: (context, state) {
-            if (state is ProfileLoading) {
-              return const Center(child: CircularProgressIndicator());
+            if (state is ProfileLoading && state is! ProfileLoaded) {
+              return Center(
+                child: CircularProgressIndicator(color: colors.primary),
+              );
             }
 
             if (state is ProfileFailure) {
               return Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(AppGeometry.screenPadding),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ErrorBanner(message: 'Unable to load profile: ${state.message}'),
-                      const SizedBox(height: 16),
-                      AppButton(
-                        label: 'Retry',
-                        icon: const Icon(Icons.refresh, size: 18),
-                        onPressed: () => context.read<ProfileBloc>().add(LoadProfileRequested()),
-                      ),
-                    ],
+                  padding: const EdgeInsets.all(24.0),
+                  child: ErrorState(
+                    message: state.message,
+                    onRetry: () => context.read<ProfileBloc>().add(LoadProfileRequested()),
                   ),
                 ),
               );
@@ -130,265 +124,373 @@ class _ProfileViewState extends State<ProfileView> {
                     : const UserProfileModel(displayName: 'OmniPresence User');
 
             final completion = profile.calculateCompletionPercentage();
+            final summaryText = profile.generateDeterministicSummary();
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(AppGeometry.screenPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title Bar with Edit Action
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Profile & Settings', style: AppTypography.h2.copyWith(color: colors.textPrimary)),
-                      TextButton.icon(
-                        icon: Icon(Icons.edit_outlined, size: 16, color: colors.primary),
-                        label: Text('Edit', style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold)),
-                        onPressed: () => _navigateToEdit(context, profile),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppGeometry.gapLarge),
-
-                  // USER IDENTITY HEADER CARD
-                  AppCard(
-                    child: Row(
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<ProfileBloc>().add(LoadProfileRequested());
+              },
+              color: colors.primary,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(AppGeometry.screenPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // PROFILE HEADER
+                    Row(
                       children: [
                         CircleAvatar(
-                          radius: 32,
-                          backgroundColor: colors.primarySoft,
+                          radius: 36,
+                          backgroundColor: colors.primary,
                           child: Text(
                             _getInitials(profile.displayName),
-                            style: AppTypography.h2.copyWith(color: colors.primary),
+                            style: AppTypography.h1.copyWith(color: Colors.white, fontSize: 24),
                           ),
                         ),
-                        const SizedBox(width: AppGeometry.gapLarge),
+                        const SizedBox(width: AppGeometry.gapNormal),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(profile.displayName, style: AppTypography.h3.copyWith(color: colors.textPrimary)),
-                              const SizedBox(height: 2),
-                              Text(profile.email ?? 'Active Session', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                              Text(
+                                profile.displayName.isNotEmpty ? profile.displayName : 'OmniPresence User',
+                                style: AppTypography.h2,
+                              ),
+                              if (profile.email != null && profile.email!.isNotEmpty)
+                                Text(
+                                  profile.email!,
+                                  style: AppTypography.caption.copyWith(color: colors.textSecondary),
+                                ),
                               if (profile.location != null && profile.location!.isNotEmpty) ...[
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 2),
                                 Row(
                                   children: [
                                     Icon(Icons.location_on_outlined, size: 14, color: colors.textSecondary),
                                     const SizedBox(width: 4),
-                                    Text(profile.location!, style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                                    Text(
+                                      profile.location!,
+                                      style: AppTypography.caption.copyWith(color: colors.textSecondary),
+                                    ),
                                   ],
                                 ),
                               ],
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppGeometry.gapNormal),
-
-                  // DETERMINISTIC PROFILE COMPLETION INDICATOR
-                  AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Profile Completion', style: AppTypography.label.copyWith(color: colors.textPrimary)),
-                            Text('$completion%', style: AppTypography.label.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: completion / 100.0,
-                            minHeight: 8,
-                            backgroundColor: colors.border,
-                            valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          completion >= 80 ? 'Comprehensive profile ready for AI synthesis' : 'Add style details to enhance outfit recommendations',
-                          style: AppTypography.caption.copyWith(color: colors.textSecondary),
+                        IconButton(
+                          icon: Icon(Icons.logout_rounded, color: colors.textSecondary),
+                          tooltip: 'Log Out',
+                          onPressed: () => _showLogoutDialog(context),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: AppGeometry.gapLarge),
+                    const SizedBox(height: AppGeometry.gapLarge),
 
-                  // PHYSICAL ATTRIBUTES
-                  _buildSectionTitle('Physical Attributes (User Declared)', colors),
-                  AppCard(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildMetricCol('Height', profile.heightCm != null ? '${profile.heightCm!.toInt()} cm' : 'Not set', colors),
-                        _buildMetricCol('Weight', profile.weightKg != null ? '${profile.weightKg!.toInt()} kg' : 'Not set', colors),
-                        _buildMetricCol('Body Type', profile.bodyType ?? 'Average', colors),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppGeometry.gapLarge),
-
-                  // STYLE & FIT PREFERENCES
-                  _buildSectionTitle('Style & Fit Preferences', colors),
-                  AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Aesthetics', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
-                        const SizedBox(height: 6),
-                        profile.stylePreferences.isNotEmpty
-                            ? Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: profile.stylePreferences.map((s) => _buildChip(s, colors)).toList(),
-                              )
-                            : Text('None specified', style: AppTypography.body.copyWith(color: colors.textSecondary)),
-                        const Divider(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Default Fit Preference', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: colors.primarySoft,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(profile.fitPreference, style: TextStyle(color: colors.primary, fontWeight: FontWeight.w600, fontSize: 13)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppGeometry.gapLarge),
-
-                  // COLOR PREFERENCES
-                  _buildSectionTitle('Color Preferences', colors),
-                  AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Preferred Colors', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
-                        const SizedBox(height: 8),
-                        profile.preferredColors.isNotEmpty
-                            ? Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: profile.preferredColors.map((hex) => _buildColorChip(hex, colors)).toList(),
-                              )
-                            : Text('None selected', style: AppTypography.body.copyWith(color: colors.textSecondary)),
-                        if (profile.dislikedColors.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          Text('Avoided Colors', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: profile.dislikedColors.map((hex) => _buildColorChip(hex, colors, isAvoided: true)).toList(),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppGeometry.gapLarge),
-
-                  // OCCASIONS & LIFESTYLE
-                  _buildSectionTitle('Occasions & Lifestyle', colors),
-                  AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Target Occasions', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
-                        const SizedBox(height: 6),
-                        profile.occasions.isNotEmpty
-                            ? Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: profile.occasions.map((o) => _buildChip(o, colors)).toList(),
-                              )
-                            : Text('Not specified', style: AppTypography.body.copyWith(color: colors.textSecondary)),
-                        const SizedBox(height: 12),
-                        Text('Daily Lifestyle Activities', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
-                        const SizedBox(height: 6),
-                        profile.lifestyle.isNotEmpty
-                            ? Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: profile.lifestyle.map((l) => _buildChip(l, colors)).toList(),
-                              )
-                            : Text('Not specified', style: AppTypography.body.copyWith(color: colors.textSecondary)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppGeometry.gapLarge),
-
-                  // DRESSING PRIORITIES
-                  _buildSectionTitle('Style & Dressing Priorities', colors),
-                  AppCard(
-                    child: Column(
-                      children: profile.priorities.entries.map((e) {
-                        final label = UserProfileModel.availablePriorityKeys
-                            .firstWhere((k) => k['key'] == e.key, orElse: () => {'label': e.key})['label']!;
-                        final pct = (e.value * 100).toInt();
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
+                    // COMPLETION BAR
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              SizedBox(width: 120, child: Text(label, style: AppTypography.caption.copyWith(color: colors.textPrimary))),
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(3),
-                                  child: LinearProgressIndicator(
-                                    value: e.value,
-                                    minHeight: 6,
-                                    backgroundColor: colors.border,
-                                    valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              SizedBox(width: 36, child: Text('$pct%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colors.textSecondary))),
+                              Text('Personalization Completeness', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold)),
+                              Text('$completion%', style: AppTypography.label.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
                             ],
                           ),
-                        );
-                      }).toList(),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: completion / 100.0,
+                              minHeight: 8,
+                              backgroundColor: colors.border,
+                              valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            completion >= 90
+                                ? 'Full style profile complete & ready for Phase 3 Face AI'
+                                : 'Complete remaining preferences to sharpen personalization',
+                            style: AppTypography.caption.copyWith(color: colors.textSecondary),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: AppGeometry.gapLarge),
+                    const SizedBox(height: AppGeometry.gapLarge),
 
-                  // ACTIONS
-                  _buildSectionTitle('Actions & Setup', colors),
-                  AppCard(
-                    padding: EdgeInsets.zero,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: Icon(Icons.refresh, color: colors.primary),
-                          title: Text('Re-run Style Onboarding', style: AppTypography.label.copyWith(color: colors.textPrimary)),
-                          subtitle: Text('Re-answer onboarding questionnaire', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
-                          trailing: Icon(Icons.chevron_right, color: colors.textSecondary),
-                          onTap: () => _reenterOnboarding(context),
+                    // PERSONAL STYLE PROFILE HERO CARD
+                    _buildSectionTitle('Personal Style Profile (Deterministic)', colors),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [colors.primary.withValues(alpha: 0.12), colors.surfaceSoft],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        const Divider(height: 1),
-                        ListTile(
-                          leading: Icon(Icons.logout, color: colors.error),
-                          title: Text('Log Out', style: AppTypography.label.copyWith(color: colors.error)),
-                          subtitle: Text('Sign out of your active session', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
-                          trailing: Icon(Icons.chevron_right, color: colors.textSecondary),
-                          onTap: () => _showLogoutDialog(context),
-                        ),
-                      ],
+                        borderRadius: BorderRadius.circular(AppGeometry.radiusCard),
+                        border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.auto_awesome, color: colors.primary, size: 20),
+                              const SizedBox(width: 8),
+                              Text("Style Synthesis", style: AppTypography.label.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            "\"$summaryText\"",
+                            style: AppTypography.body.copyWith(fontStyle: FontStyle.italic, height: 1.4),
+                          ),
+                          const Divider(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildMiniBadge("Primary Style", profile.primaryStyle, colors, isHighlight: true),
+                              _buildMiniBadge("Primary Fit", profile.primaryFit, colors),
+                              _buildMiniBadge("Comfort Focus", "${((1.0 - profile.comfortAppearanceScore) * 100).toInt()}%", colors),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                ],
+                    const SizedBox(height: AppGeometry.gapLarge),
+
+                    // STYLE & FIT DETAILS
+                    _buildSectionTitle('Aesthetics & Fits', colors),
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Primary Everyday Style', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                          const SizedBox(height: 6),
+                          _buildChip(profile.primaryStyle, colors, isStar: true),
+                          if (profile.secondaryStyles.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Text('Secondary Styles', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: profile.secondaryStyles.map((s) => _buildChip(s, colors)).toList(),
+                            ),
+                          ],
+                          const Divider(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Primary Fit', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                                  const SizedBox(height: 4),
+                                  Text(profile.primaryFit, style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              if (profile.secondaryFit != null)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text('Secondary Fit', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                                    const SizedBox(height: 4),
+                                    Text(profile.secondaryFit!, style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppGeometry.gapLarge),
+
+                    // COLOR PREFERENCES
+                    _buildSectionTitle('Color Preferences', colors),
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Preferred Colors', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                          const SizedBox(height: 8),
+                          profile.preferredColors.isNotEmpty
+                              ? Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: profile.preferredColors.map((hex) => _buildColorChip(hex, colors)).toList(),
+                                )
+                              : Text('None selected', style: AppTypography.body.copyWith(color: colors.textSecondary)),
+                          if (profile.neutralColors.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Text('Neutral Staples', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: profile.neutralColors.map((hex) => _buildColorChip(hex, colors)).toList(),
+                            ),
+                          ],
+                          if (profile.dislikedColors.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Text('Avoided Colors', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: profile.dislikedColors.map((hex) => _buildColorChip(hex, colors, isAvoided: true)).toList(),
+                            ),
+                          ],
+                          const Divider(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Color Openness', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                              Text('${(profile.colorExperimentationScore * 100).toInt()}%', style: AppTypography.caption.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppGeometry.gapLarge),
+
+                    // OCCASIONS & LIFESTYLE
+                    _buildSectionTitle('Occasions & Routines', colors),
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (profile.topOccasions.isNotEmpty) ...[
+                            Text('Top Dress-Up Occasions', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: profile.topOccasions.map((o) => _buildChip(o, colors, isStar: true)).toList(),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                          Text('All Target Occasions', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                          const SizedBox(height: 6),
+                          profile.occasions.isNotEmpty
+                              ? Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: profile.occasions.map((o) => _buildChip(o, colors)).toList(),
+                                )
+                              : Text('Not specified', style: AppTypography.body.copyWith(color: colors.textSecondary)),
+                          const SizedBox(height: 12),
+                          Text('Weekly Activities', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                          const SizedBox(height: 6),
+                          profile.lifestyle.isNotEmpty
+                              ? Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: profile.lifestyle.map((l) => _buildChip(l, colors)).toList(),
+                                )
+                              : Text('Not specified', style: AppTypography.body.copyWith(color: colors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppGeometry.gapLarge),
+
+                    // FASHION PRIORITIES RANKING
+                    _buildSectionTitle('Fashion Priorities (Ranked Weights)', colors),
+                    AppCard(
+                      child: Column(
+                        children: profile.fashionPrioritiesRanked.map((key) {
+                          final label = UserProfileModel.standardRankedPriorities.firstWhere(
+                            (p) => p['key'] == key,
+                            orElse: () => {'key': key, 'label': key},
+                          )['label']!;
+                          final weight = profile.fashionPriorityWeights[key] ?? 0.8;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                SizedBox(width: 140, child: Text(label, style: AppTypography.caption.copyWith(color: colors.textPrimary))),
+                                Expanded(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(3),
+                                    child: LinearProgressIndicator(
+                                      value: weight,
+                                      minHeight: 6,
+                                      backgroundColor: colors.border,
+                                      valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text('${(weight * 100).toInt()}%', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: AppGeometry.gapLarge),
+
+                    // PHYSICAL ATTRIBUTES
+                    _buildSectionTitle('Physical Attributes (User Declared)', colors),
+                    AppCard(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildMetricCol('Height', profile.heightCm != null ? '${profile.heightCm!.toInt()} cm' : 'Not set', colors),
+                          _buildMetricCol('Weight', profile.weightKg != null ? '${profile.weightKg!.toInt()} kg' : 'Not set', colors),
+                          _buildMetricCol('Body Type', profile.bodyType ?? 'Average', colors),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppGeometry.gapLarge),
+
+                    // BRANDS & BUDGET
+                    _buildSectionTitle('Brands & Budget', colors),
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Budget Tier', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                              Text(profile.budgetTier, style: AppTypography.body.copyWith(fontWeight: FontWeight.bold, color: colors.primary)),
+                            ],
+                          ),
+                          if (profile.preferredBrands.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            Text('Preferred Brands', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              children: profile.preferredBrands.map((b) => _buildChip(b, colors)).toList(),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppGeometry.gapLarge),
+
+                    // ACTION BUTTONS
+                    AppButton(
+                      label: 'Edit Preferences',
+                      onPressed: () => _navigateToEdit(context, profile),
+                    ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: TextButton.icon(
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('Re-take Style Assessment'),
+                        onPressed: () => _reenterOnboarding(context),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
             );
           },
@@ -397,66 +499,88 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  Widget _buildSectionTitle(String title, AppSemanticColors colors) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(title, style: AppTypography.h3.copyWith(color: colors.textPrimary)),
-    );
-  }
-
-  Widget _buildMetricCol(String label, String value, AppSemanticColors colors) {
+  Widget _buildMiniBadge(String title, String val, dynamic colors, {bool isHighlight = false}) {
     return Column(
       children: [
-        Text(label, style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+        Text(title, style: TextStyle(fontSize: 11, color: colors.textSecondary)),
         const SizedBox(height: 4),
-        Text(value, style: AppTypography.h3.copyWith(color: colors.textPrimary)),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: isHighlight ? colors.primary.withValues(alpha: 0.2) : colors.surfaceSoft,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            val,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: isHighlight ? colors.primary : colors.textPrimary,
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildChip(String label, AppSemanticColors colors) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: colors.surfaceSoft,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.border),
+  Widget _buildSectionTitle(String title, dynamic colors) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, left: 4),
+      child: Text(
+        title,
+        style: AppTypography.label.copyWith(color: colors.textSecondary, fontWeight: FontWeight.bold),
       ),
-      child: Text(label, style: AppTypography.caption.copyWith(color: colors.textPrimary)),
     );
   }
 
-  Widget _buildColorChip(String hex, AppSemanticColors colors, {bool isAvoided = false}) {
-    final std = UserProfileModel.standardColors.firstWhere(
-      (c) => c['hex'] == hex,
-      orElse: () => {'name': hex, 'color': 0xFF9E9E9E},
+  Widget _buildMetricCol(String label, String value, dynamic colors) {
+    return Column(
+      children: [
+        Text(label, style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+        const SizedBox(height: 4),
+        Text(value, style: AppTypography.h3.copyWith(color: colors.textPrimary, fontSize: 16)),
+      ],
     );
-    final color = Color(std['color'] as int);
-    final name = std['name'] as String;
+  }
 
+  Widget _buildChip(String text, dynamic colors, {bool isStar = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: isAvoided ? colors.error.withValues(alpha: 0.1) : colors.surface,
+        color: isStar ? colors.primary.withValues(alpha: 0.15) : colors.surfaceSoft,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isAvoided ? colors.error : colors.border),
+        border: Border.all(color: isStar ? colors.primary.withValues(alpha: 0.4) : colors.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey.shade400, width: 0.5),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Text(name, style: TextStyle(fontSize: 11, color: isAvoided ? colors.error : colors.textPrimary)),
+          if (isStar) ...[
+            Icon(Icons.star_rounded, size: 14, color: colors.primary),
+            const SizedBox(width: 4),
+          ],
+          Text(text, style: TextStyle(color: isStar ? colors.primary : colors.textPrimary, fontSize: 12, fontWeight: isStar ? FontWeight.bold : FontWeight.w500)),
         ],
       ),
+    );
+  }
+
+  Widget _buildColorChip(String hex, dynamic colors, {bool isAvoided = false}) {
+    Color parsedColor;
+    try {
+      parsedColor = Color(int.parse(hex.replaceFirst('#', '0xFF')));
+    } catch (_) {
+      parsedColor = Colors.grey;
+    }
+
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: parsedColor,
+        shape: BoxShape.circle,
+        border: Border.all(color: isAvoided ? Colors.red : colors.border, width: isAvoided ? 2 : 1),
+      ),
+      child: isAvoided ? const Icon(Icons.close, size: 16, color: Colors.red) : null,
     );
   }
 }

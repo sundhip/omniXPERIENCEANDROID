@@ -13,6 +13,8 @@ from app.core.security import get_current_user_id
 
 router = APIRouter()
 
+from app.services.personalization_service import PersonalizationService
+
 @router.get("/full", response_model=FullProfileResponse)
 async def get_full_profile(user_id: str = Depends(get_current_user_id), db: AsyncSession = Depends(get_db)):
     user_res = await db.execute(select(User).where(User.id == user_id))
@@ -35,6 +37,39 @@ async def get_full_profile(user_id: str = Depends(get_current_user_id), db: Asyn
         await db.commit()
         await db.refresh(pref)
 
+    # Ensure personal_style_profile is populated deterministically
+    style_profile = pref.personal_style_profile or {}
+    if not style_profile:
+        style_profile = PersonalizationService.build_personal_style_profile(
+            primary_style=pref.primary_style,
+            secondary_styles=pref.secondary_styles,
+            style_preferences=pref.style_preferences,
+            primary_fit=pref.primary_fit,
+            secondary_fit=pref.secondary_fit,
+            fit_preference=pref.fit_preference,
+            preferred_colors=pref.preferred_colors,
+            neutral_colors=pref.neutral_colors,
+            disliked_colors=pref.disliked_colors,
+            colors_to_experiment=pref.colors_to_experiment,
+            color_experimentation_score=pref.color_experimentation_score or 0.5,
+            occasions=pref.occasions,
+            top_occasions=pref.top_occasions,
+            occasion_frequencies=pref.occasion_frequencies,
+            lifestyle=pref.lifestyle,
+            comfort_appearance_score=pref.comfort_appearance_score or 0.5,
+            experimentation_score=pref.experimentation_score or 0.5,
+            fashion_priorities_ranked=pref.fashion_priorities_ranked,
+            priorities=pref.priorities,
+            preferred_brands=pref.preferred_brands,
+            avoided_brands=pref.avoided_brands,
+            budget_tier=pref.budget_tier,
+            version=pref.personalization_version or 1,
+        )
+        pref.personal_style_profile = style_profile
+        pref.fashion_priority_weights = style_profile.get("fashion_priority_weights", {})
+        await db.commit()
+        await db.refresh(pref)
+
     return FullProfileResponse(
         id=profile.id,
         user_id=user_id,
@@ -49,12 +84,30 @@ async def get_full_profile(user_id: str = Depends(get_current_user_id), db: Asyn
         body_type=profile.body_type,
         onboarding_completed=profile.onboarding_completed,
         style_preferences=pref.style_preferences or [],
+        primary_style=pref.primary_style,
+        secondary_styles=pref.secondary_styles or [],
         fit_preference=pref.fit_preference or "Regular",
+        primary_fit=pref.primary_fit or "Regular",
+        secondary_fit=pref.secondary_fit,
         preferred_colors=pref.preferred_colors or [],
         disliked_colors=pref.disliked_colors or [],
+        neutral_colors=pref.neutral_colors or [],
+        colors_to_experiment=pref.colors_to_experiment or [],
+        color_experimentation_score=pref.color_experimentation_score or 0.5,
+        experimentation_score=pref.experimentation_score or 0.5,
+        comfort_appearance_score=pref.comfort_appearance_score or 0.5,
         occasions=pref.occasions or [],
+        top_occasions=pref.top_occasions or [],
+        occasion_frequencies=pref.occasion_frequencies or {},
         lifestyle=pref.lifestyle or [],
         priorities=pref.priorities or {},
+        fashion_priorities_ranked=pref.fashion_priorities_ranked or [],
+        fashion_priority_weights=pref.fashion_priority_weights or {},
+        preferred_brands=pref.preferred_brands or [],
+        avoided_brands=pref.avoided_brands or [],
+        budget_tier=pref.budget_tier,
+        personal_style_profile=style_profile,
+        personalization_version=pref.personalization_version or 1,
         ai_personalization_enabled=pref.ai_personalization_enabled,
         created_at=profile.created_at,
         updated_at=profile.updated_at,
@@ -62,6 +115,7 @@ async def get_full_profile(user_id: str = Depends(get_current_user_id), db: Asyn
     )
 
 @router.put("/full", response_model=FullProfileResponse)
+@router.patch("/full", response_model=FullProfileResponse)
 async def update_full_profile(data: FullProfileUpdate, user_id: str = Depends(get_current_user_id), db: AsyncSession = Depends(get_db)):
     user_res = await db.execute(select(User).where(User.id == user_id))
     user = user_res.scalars().first()
@@ -80,7 +134,16 @@ async def update_full_profile(data: FullProfileUpdate, user_id: str = Depends(ge
         db.add(pref)
 
     profile_fields = {"display_name", "avatar_url", "age", "gender", "location", "height_cm", "weight_kg", "body_type", "onboarding_completed"}
-    pref_fields = {"style_preferences", "fit_preference", "preferred_colors", "disliked_colors", "occasions", "lifestyle", "priorities", "ai_personalization_enabled"}
+    pref_fields = {
+        "style_preferences", "primary_style", "secondary_styles", "fit_preference",
+        "primary_fit", "secondary_fit", "preferred_colors", "disliked_colors",
+        "neutral_colors", "colors_to_experiment", "color_experimentation_score",
+        "experimentation_score", "comfort_appearance_score", "occasions",
+        "top_occasions", "occasion_frequencies", "lifestyle", "priorities",
+        "fashion_priorities_ranked", "fashion_priority_weights", "preferred_brands",
+        "avoided_brands", "budget_tier", "personal_style_profile", "personalization_version",
+        "ai_personalization_enabled"
+    }
 
     data_dict = data.model_dump(exclude_unset=True)
     for k, v in data_dict.items():
@@ -88,6 +151,35 @@ async def update_full_profile(data: FullProfileUpdate, user_id: str = Depends(ge
             setattr(profile, k, v)
         elif k in pref_fields:
             setattr(pref, k, v)
+
+    # Re-calculate deterministic personal_style_profile
+    style_profile = PersonalizationService.build_personal_style_profile(
+        primary_style=pref.primary_style,
+        secondary_styles=pref.secondary_styles,
+        style_preferences=pref.style_preferences,
+        primary_fit=pref.primary_fit,
+        secondary_fit=pref.secondary_fit,
+        fit_preference=pref.fit_preference,
+        preferred_colors=pref.preferred_colors,
+        neutral_colors=pref.neutral_colors,
+        disliked_colors=pref.disliked_colors,
+        colors_to_experiment=pref.colors_to_experiment,
+        color_experimentation_score=pref.color_experimentation_score or 0.5,
+        occasions=pref.occasions,
+        top_occasions=pref.top_occasions,
+        occasion_frequencies=pref.occasion_frequencies,
+        lifestyle=pref.lifestyle,
+        comfort_appearance_score=pref.comfort_appearance_score or 0.5,
+        experimentation_score=pref.experimentation_score or 0.5,
+        fashion_priorities_ranked=pref.fashion_priorities_ranked,
+        priorities=pref.priorities,
+        preferred_brands=pref.preferred_brands,
+        avoided_brands=pref.avoided_brands,
+        budget_tier=pref.budget_tier,
+        version=pref.personalization_version or 1,
+    )
+    pref.personal_style_profile = style_profile
+    pref.fashion_priority_weights = style_profile.get("fashion_priority_weights", {})
 
     profile.sync_version += 1
     pref.sync_version += 1
@@ -109,12 +201,30 @@ async def update_full_profile(data: FullProfileUpdate, user_id: str = Depends(ge
         body_type=profile.body_type,
         onboarding_completed=profile.onboarding_completed,
         style_preferences=pref.style_preferences or [],
+        primary_style=pref.primary_style,
+        secondary_styles=pref.secondary_styles or [],
         fit_preference=pref.fit_preference or "Regular",
+        primary_fit=pref.primary_fit or "Regular",
+        secondary_fit=pref.secondary_fit,
         preferred_colors=pref.preferred_colors or [],
         disliked_colors=pref.disliked_colors or [],
+        neutral_colors=pref.neutral_colors or [],
+        colors_to_experiment=pref.colors_to_experiment or [],
+        color_experimentation_score=pref.color_experimentation_score or 0.5,
+        experimentation_score=pref.experimentation_score or 0.5,
+        comfort_appearance_score=pref.comfort_appearance_score or 0.5,
         occasions=pref.occasions or [],
+        top_occasions=pref.top_occasions or [],
+        occasion_frequencies=pref.occasion_frequencies or {},
         lifestyle=pref.lifestyle or [],
         priorities=pref.priorities or {},
+        fashion_priorities_ranked=pref.fashion_priorities_ranked or [],
+        fashion_priority_weights=pref.fashion_priority_weights or {},
+        preferred_brands=pref.preferred_brands or [],
+        avoided_brands=pref.avoided_brands or [],
+        budget_tier=pref.budget_tier,
+        personal_style_profile=style_profile,
+        personalization_version=pref.personalization_version or 1,
         ai_personalization_enabled=pref.ai_personalization_enabled,
         created_at=profile.created_at,
         updated_at=profile.updated_at,

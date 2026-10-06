@@ -44,13 +44,31 @@ class Preference(Base):
     id = Column(String(64), primary_key=True, index=True)
     user_id = Column(String(64), ForeignKey("users.id"), unique=True, nullable=False)
     style_preferences = Column(JSON, default=list) # ["Minimal", "Classic", "Casual", etc.]
+    primary_style = Column(String(50), nullable=True)
+    secondary_styles = Column(JSON, default=list)
     fit_preference = Column(String(50), default="Regular") # Slim, Regular, Relaxed, Oversized, Mixed
+    primary_fit = Column(String(50), default="Regular")
+    secondary_fit = Column(String(50), nullable=True)
     preferred_colors = Column(JSON, default=list)
     disliked_colors = Column(JSON, default=list)
+    neutral_colors = Column(JSON, default=list)
+    colors_to_experiment = Column(JSON, default=list)
+    color_experimentation_score = Column(Float, default=0.5)
+    experimentation_score = Column(Float, default=0.5)
+    comfort_appearance_score = Column(Float, default=0.5)
     preferred_categories = Column(JSON, default=list)
     occasions = Column(JSON, default=list) # ["college", "office", "party", etc.]
+    top_occasions = Column(JSON, default=list)
+    occasion_frequencies = Column(JSON, default=dict) # {"formal": 0.33, "casual": 1.0, ...}
     lifestyle = Column(JSON, default=list) # ["work", "gym", "travel", etc.]
     priorities = Column(JSON, default=dict) # {"comfort": 0.8, "appearance": 0.9, etc.}
+    fashion_priorities_ranked = Column(JSON, default=list)
+    fashion_priority_weights = Column(JSON, default=dict)
+    preferred_brands = Column(JSON, default=list)
+    avoided_brands = Column(JSON, default=list)
+    budget_tier = Column(String(50), nullable=True)
+    personal_style_profile = Column(JSON, default=dict)
+    personalization_version = Column(Integer, default=1)
     notification_preferences = Column(JSON, default=dict)
     ai_personalization_enabled = Column(Boolean, default=True)
     privacy_settings = Column(JSON, default=dict)

@@ -29,11 +29,17 @@ class _EditProfileViewState extends State<EditProfileView> {
   String? _selectedGender;
   String? _selectedBodyType;
   late Set<String> _selectedStyles;
+  late String _primaryStyle;
   late String _selectedFit;
+  String? _secondaryFit;
   late Set<String> _selectedPreferredColors;
   late Set<String> _selectedDislikedColors;
+  late Set<String> _selectedNeutralColors;
   late Set<String> _selectedOccasions;
   late Set<String> _selectedLifestyle;
+  late double _comfortAppearanceScore;
+  late double _experimentationScore;
+  late String _budgetTier;
   late Map<String, double> _priorities;
 
   @override
@@ -49,11 +55,17 @@ class _EditProfileViewState extends State<EditProfileView> {
     _selectedGender = p.gender;
     _selectedBodyType = p.bodyType ?? 'Average';
     _selectedStyles = Set<String>.from(p.stylePreferences);
-    _selectedFit = p.fitPreference.isNotEmpty ? p.fitPreference : 'Regular';
+    _primaryStyle = p.primaryStyle.isNotEmpty ? p.primaryStyle : (_selectedStyles.isNotEmpty ? _selectedStyles.first : 'Casual');
+    _selectedFit = p.primaryFit.isNotEmpty ? p.primaryFit : 'Regular';
+    _secondaryFit = p.secondaryFit;
     _selectedPreferredColors = Set<String>.from(p.preferredColors);
     _selectedDislikedColors = Set<String>.from(p.dislikedColors);
+    _selectedNeutralColors = Set<String>.from(p.neutralColors);
     _selectedOccasions = Set<String>.from(p.occasions);
     _selectedLifestyle = Set<String>.from(p.lifestyle);
+    _comfortAppearanceScore = p.comfortAppearanceScore;
+    _experimentationScore = p.experimentationScore;
+    _budgetTier = p.budgetTier;
     _priorities = Map<String, double>.from(p.priorities);
   }
 
@@ -88,11 +100,19 @@ class _EditProfileViewState extends State<EditProfileView> {
       weightKg: weight,
       bodyType: _selectedBodyType,
       stylePreferences: _selectedStyles.toList(),
+      primaryStyle: _primaryStyle,
+      secondaryStyles: _selectedStyles.where((s) => s != _primaryStyle).toList(),
+      primaryFit: _selectedFit,
       fitPreference: _selectedFit,
+      secondaryFit: _secondaryFit,
       preferredColors: _selectedPreferredColors.toList(),
       dislikedColors: _selectedDislikedColors.toList(),
+      neutralColors: _selectedNeutralColors.toList(),
       occasions: _selectedOccasions.toList(),
       lifestyle: _selectedLifestyle.toList(),
+      comfortAppearanceScore: _comfortAppearanceScore,
+      experimentationScore: _experimentationScore,
+      budgetTier: _budgetTier,
       priorities: _priorities,
     );
 
@@ -107,7 +127,7 @@ class _EditProfileViewState extends State<EditProfileView> {
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        title: Text('Edit Profile', style: AppTypography.h3.copyWith(color: colors.textPrimary)),
+        title: Text('Edit Profile & Preferences', style: AppTypography.h3.copyWith(color: colors.textPrimary)),
         backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
@@ -183,12 +203,11 @@ class _EditProfileViewState extends State<EditProfileView> {
               AppTextField(
                 label: 'Location / City',
                 controller: _locationController,
-                hint: 'e.g. San Francisco, CA',
               ),
               const SizedBox(height: AppGeometry.gapLarge),
 
-              // SECTION 2: PHYSICAL PROFILE (User declared)
-              _buildSectionHeader('Physical Profile', colors, subtitle: 'User-declared dimensions for tailoring & fit'),
+              // SECTION 2: PHYSICAL METRICS
+              _buildSectionHeader('Physical Attributes', colors, subtitle: 'Self-declared stats for styling fit'),
               Row(
                 children: [
                   Expanded(
@@ -199,7 +218,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                       validator: (val) {
                         if (val != null && val.trim().isNotEmpty) {
                           final h = double.tryParse(val.trim());
-                          if (h == null || h < 50 || h > 250) return '50 - 250 cm';
+                          if (h == null || h < 50 || h > 280) return 'Invalid height (50-280)';
                         }
                         return null;
                       },
@@ -214,7 +233,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                       validator: (val) {
                         if (val != null && val.trim().isNotEmpty) {
                           final w = double.tryParse(val.trim());
-                          if (w == null || w < 20 || w > 300) return '20 - 300 kg';
+                          if (w == null || w < 20 || w > 350) return 'Invalid weight (20-350)';
                         }
                         return null;
                       },
@@ -229,11 +248,12 @@ class _EditProfileViewState extends State<EditProfileView> {
                 spacing: 8,
                 runSpacing: 8,
                 children: UserProfileModel.availableBodyTypes.map((bt) {
-                  final isSelected = _selectedBodyType == bt['id'];
+                  final id = bt['id']!;
+                  final isSelected = _selectedBodyType == id;
                   return ChoiceChip(
                     label: Text(bt['label']!),
                     selected: isSelected,
-                    onSelected: (_) => setState(() => _selectedBodyType = bt['id']),
+                    onSelected: (_) => setState(() => _selectedBodyType = id),
                     selectedColor: colors.primarySoft,
                     labelStyle: TextStyle(color: isSelected ? colors.primary : colors.textPrimary),
                   );
@@ -241,8 +261,8 @@ class _EditProfileViewState extends State<EditProfileView> {
               ),
               const SizedBox(height: AppGeometry.gapLarge),
 
-              // SECTION 3: STYLE PROFILE
-              _buildSectionHeader('Style Preferences', colors, subtitle: 'Select all aesthetics that resonate with you'),
+              // SECTION 3: STYLE PREFERENCES
+              _buildSectionHeader('Aesthetic Styles', colors, subtitle: 'Select styles you gravitate toward'),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -258,6 +278,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                           _selectedStyles.add(id);
                         } else {
                           _selectedStyles.remove(id);
+                          if (_primaryStyle == id && _selectedStyles.isNotEmpty) {
+                            _primaryStyle = _selectedStyles.first;
+                          }
                         }
                       });
                     },
@@ -266,10 +289,27 @@ class _EditProfileViewState extends State<EditProfileView> {
                   );
                 }).toList(),
               ),
+              const SizedBox(height: 16),
+              Text('Primary Everyday Style', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                children: (_selectedStyles.isNotEmpty ? _selectedStyles : ['Casual']).map((s) {
+                  final isPrimary = _primaryStyle == s;
+                  return ChoiceChip(
+                    avatar: isPrimary ? Icon(Icons.star_rounded, size: 16, color: colors.primary) : null,
+                    label: Text(s),
+                    selected: isPrimary,
+                    onSelected: (_) => setState(() => _primaryStyle = s),
+                    selectedColor: colors.primarySoft,
+                    labelStyle: TextStyle(color: isPrimary ? colors.primary : colors.textPrimary),
+                  );
+                }).toList(),
+              ),
               const SizedBox(height: AppGeometry.gapLarge),
 
               // SECTION 4: FIT PREFERENCE
-              _buildSectionHeader('Fit Preference', colors, subtitle: 'Your default clothing fit'),
+              _buildSectionHeader('Fit Preferences', colors, subtitle: 'Primary & secondary clothing cuts'),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -288,41 +328,72 @@ class _EditProfileViewState extends State<EditProfileView> {
               const SizedBox(height: AppGeometry.gapLarge),
 
               // SECTION 5: COLOR PREFERENCES
-              _buildSectionHeader('Favorite & Preferred Colors', colors, subtitle: 'Standard color palette'),
+              _buildSectionHeader('Favorite Colors', colors, subtitle: 'Standard color palette'),
               _buildColorSelector(
                 selectedHexes: _selectedPreferredColors,
                 onToggle: (hex) {
                   setState(() {
-                    if (_selectedPreferredColors.contains(hex)) {
-                      _selectedPreferredColors.remove(hex);
-                    } else {
-                      _selectedPreferredColors.add(hex);
-                      _selectedDislikedColors.remove(hex);
-                    }
+                    _selectedPreferredColors.contains(hex)
+                        ? _selectedPreferredColors.remove(hex)
+                        : _selectedPreferredColors.add(hex);
+                    _selectedDislikedColors.remove(hex);
                   });
                 },
                 colors: colors,
               ),
               const SizedBox(height: AppGeometry.gapNormal),
-              _buildSectionHeader('Colors You Avoid / Dislike', colors),
+              _buildSectionHeader('Avoided Colors', colors),
               _buildColorSelector(
                 selectedHexes: _selectedDislikedColors,
                 onToggle: (hex) {
                   setState(() {
-                    if (_selectedDislikedColors.contains(hex)) {
-                      _selectedDislikedColors.remove(hex);
-                    } else {
-                      _selectedDislikedColors.add(hex);
-                      _selectedPreferredColors.remove(hex);
-                    }
+                    _selectedDislikedColors.contains(hex)
+                        ? _selectedDislikedColors.remove(hex)
+                        : _selectedDislikedColors.add(hex);
+                    _selectedPreferredColors.remove(hex);
                   });
                 },
                 colors: colors,
               ),
               const SizedBox(height: AppGeometry.gapLarge),
 
-              // SECTION 6: OCCASIONS & LIFESTYLE
-              _buildSectionHeader('Occasions', colors, subtitle: 'What settings do you usually dress for?'),
+              // SECTION 6: COMFORT VS APPEARANCE
+              _buildSectionHeader('Styling Philosophy', colors),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Comfort Focus', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                  Text('${((1.0 - _comfortAppearanceScore) * 100).toInt()}% Comfort / ${(_comfortAppearanceScore * 100).toInt()}% Appearance', style: AppTypography.caption.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Slider(
+                value: _comfortAppearanceScore,
+                min: 0.0,
+                max: 1.0,
+                divisions: 10,
+                activeColor: colors.primary,
+                onChanged: (val) => setState(() => _comfortAppearanceScore = val),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Adventurousness', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                  Text('${(_experimentationScore * 100).toInt()}%', style: AppTypography.caption.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Slider(
+                value: _experimentationScore,
+                min: 0.0,
+                max: 1.0,
+                divisions: 4,
+                activeColor: colors.primary,
+                onChanged: (val) => setState(() => _experimentationScore = val),
+              ),
+              const SizedBox(height: AppGeometry.gapLarge),
+
+              // SECTION 7: OCCASIONS & LIFESTYLE
+              _buildSectionHeader('Target Occasions', colors),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -334,11 +405,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                     selected: isSelected,
                     onSelected: (selected) {
                       setState(() {
-                        if (selected) {
-                          _selectedOccasions.add(id);
-                        } else {
-                          _selectedOccasions.remove(id);
-                        }
+                        selected ? _selectedOccasions.add(id) : _selectedOccasions.remove(id);
                       });
                     },
                     selectedColor: colors.primarySoft,
@@ -347,72 +414,28 @@ class _EditProfileViewState extends State<EditProfileView> {
                 }).toList(),
               ),
               const SizedBox(height: AppGeometry.gapNormal),
-              _buildSectionHeader('Lifestyle Activities', colors),
+              _buildSectionHeader('Budget Tier', colors),
               Wrap(
                 spacing: 8,
-                runSpacing: 8,
-                children: UserProfileModel.availableLifestyle.map((act) {
-                  final id = act['id']!;
-                  final isSelected = _selectedLifestyle.contains(id);
-                  return FilterChip(
-                    label: Text(act['label']!),
+                children: UserProfileModel.budgetTierOptions.map((tier) {
+                  final isSelected = _budgetTier == tier;
+                  return ChoiceChip(
+                    label: Text(tier),
                     selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedLifestyle.add(id);
-                        } else {
-                          _selectedLifestyle.remove(id);
-                        }
-                      });
-                    },
+                    onSelected: (_) => setState(() => _budgetTier = tier),
                     selectedColor: colors.primarySoft,
                     labelStyle: TextStyle(color: isSelected ? colors.primary : colors.textPrimary),
                   );
                 }).toList(),
               ),
-              const SizedBox(height: AppGeometry.gapLarge),
-
-              // SECTION 7: PRIORITIES
-              _buildSectionHeader('Style & Dressing Priorities', colors, subtitle: 'Fine-tune what matters most'),
-              ...UserProfileModel.availablePriorityKeys.map((pKey) {
-                final key = pKey['key']!;
-                final label = pKey['label']!;
-                final value = _priorities[key] ?? 0.5;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(label, style: AppTypography.body.copyWith(color: colors.textPrimary)),
-                        Text('${(value * 100).toInt()}%', style: AppTypography.caption.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    Slider(
-                      value: value,
-                      min: 0.0,
-                      max: 1.0,
-                      divisions: 10,
-                      activeColor: colors.primary,
-                      onChanged: (newVal) {
-                        setState(() {
-                          _priorities[key] = double.parse(newVal.toStringAsFixed(1));
-                        });
-                      },
-                    ),
-                  ],
-                );
-              }),
-              const SizedBox(height: AppGeometry.gapLarge),
+              const SizedBox(height: AppGeometry.gapLarge * 2),
 
               // SAVE BUTTON
               AppButton(
-                label: 'Save Changes',
-                icon: const Icon(Icons.check, size: 18),
+                label: 'Save Preferences',
                 onPressed: _saveProfile,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppGeometry.gapLarge),
             ],
           ),
         ),
@@ -420,18 +443,17 @@ class _EditProfileViewState extends State<EditProfileView> {
     );
   }
 
-  Widget _buildSectionHeader(String title, AppSemanticColors colors, {String? subtitle}) {
+  Widget _buildSectionHeader(String title, dynamic colors, {String? subtitle}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppTypography.h3.copyWith(color: colors.textPrimary)),
+          Text(title, style: AppTypography.h3.copyWith(color: colors.textPrimary, fontSize: 16)),
           if (subtitle != null) ...[
             const SizedBox(height: 2),
             Text(subtitle, style: AppTypography.caption.copyWith(color: colors.textSecondary)),
           ],
-          const SizedBox(height: 8),
         ],
       ),
     );
@@ -439,53 +461,35 @@ class _EditProfileViewState extends State<EditProfileView> {
 
   Widget _buildColorSelector({
     required Set<String> selectedHexes,
-    required ValueChanged<String> onToggle,
-    required AppSemanticColors colors,
+    required Function(String) onToggle,
+    required dynamic colors,
   }) {
     return Wrap(
       spacing: 10,
       runSpacing: 10,
       children: UserProfileModel.standardColors.map((c) {
         final hex = c['hex'] as String;
-        final name = c['name'] as String;
-        final colorValue = Color(c['color'] as int);
         final isSelected = selectedHexes.contains(hex);
-
         return GestureDetector(
           onTap: () => onToggle(hex),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: isSelected ? colors.primarySoft : colors.surface,
-              borderRadius: BorderRadius.circular(20),
+              color: Color(c['color'] as int),
+              shape: BoxShape.circle,
               border: Border.all(
                 color: isSelected ? colors.primary : colors.border,
-                width: isSelected ? 2 : 1,
+                width: isSelected ? 3 : 1,
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: colorValue,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.shade400, width: 0.5),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected ? colors.primary : colors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
+            child: isSelected
+                ? Icon(
+                    Icons.check,
+                    size: 20,
+                    color: hex == '#FFFFFF' || hex == '#E5E7EB' ? Colors.black : Colors.white,
+                  )
+                : null,
           ),
         );
       }).toList(),

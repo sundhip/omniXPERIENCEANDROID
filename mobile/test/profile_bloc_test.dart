@@ -33,14 +33,26 @@ void main() {
     test('calculateCompletionPercentage calculates deterministically', () {
       const emptyProfile = UserProfileModel(
         displayName: '',
+        primaryStyle: '',
+        stylePreferences: [],
+        primaryFit: '',
         fitPreference: '',
         priorities: {},
+        fashionPrioritiesRanked: [],
       );
       expect(emptyProfile.calculateCompletionPercentage(), equals(0));
 
-      const minimalProfile = UserProfileModel(displayName: 'Test User');
+      const minimalProfile = UserProfileModel(
+        displayName: 'Test User',
+        primaryStyle: '',
+        stylePreferences: [],
+        primaryFit: '',
+        fitPreference: '',
+        priorities: {},
+        fashionPrioritiesRanked: [],
+      );
       final minimalPct = minimalProfile.calculateCompletionPercentage();
-      expect(minimalPct, equals(35)); // Name (15) + Default Fit (10) + Priorities (10)
+      expect(minimalPct, equals(10)); // Name only (+10)
 
       const fullProfile = UserProfileModel(
         displayName: 'Alice Designer',
