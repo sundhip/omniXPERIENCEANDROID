@@ -12,6 +12,7 @@ class AppTextField extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final ValueChanged<String>? onChanged;
+  final FormFieldValidator<String>? validator;
 
   const AppTextField({super.key, required this.label,
     this.hint,
@@ -21,6 +22,7 @@ class AppTextField extends StatelessWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.onChanged,
+    this.validator,
   });
 
   @override
@@ -37,11 +39,12 @@ class AppTextField extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        TextField(
+        TextFormField(
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
           onChanged: onChanged,
+          validator: validator,
           style: AppTypography.body.copyWith(color: colors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
@@ -58,6 +61,14 @@ class AppTextField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppGeometry.radiusInput),
               borderSide: BorderSide(color: colors.primary, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppGeometry.radiusInput),
+              borderSide: BorderSide(color: colors.error),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppGeometry.radiusInput),
+              borderSide: BorderSide(color: colors.error, width: 1.5),
             ),
           ),
         ),

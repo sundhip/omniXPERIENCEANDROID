@@ -12,6 +12,45 @@ from app.api.v1.api import api_router
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        
+        # Safe migration for existing SQLite/Postgres tables
+        def _migrate(sync_conn):
+            import sqlalchemy as sa
+            inspector = sa.inspect(sync_conn)
+            tables = inspector.get_table_names()
+            if "profiles" in tables:
+                profile_cols = {c["name"] for c in inspector.get_columns("profiles")}
+                new_profile_cols = [
+                    ("age", "INTEGER"),
+                    ("gender", "VARCHAR(50)"),
+                    ("location", "VARCHAR(100)"),
+                    ("height_cm", "FLOAT"),
+                    ("weight_kg", "FLOAT"),
+                    ("body_type", "VARCHAR(50)"),
+                    ("onboarding_completed", "BOOLEAN DEFAULT 0"),
+                ]
+                for col_name, col_type in new_profile_cols:
+                    if col_name not in profile_cols:
+                        try:
+                            sync_conn.execute(sa.text(f"ALTER TABLE profiles ADD COLUMN {col_name} {col_type}"))
+                        except Exception:
+                            pass
+            
+            if "preferences" in tables:
+                pref_cols = {c["name"] for c in inspector.get_columns("preferences")}
+                new_pref_cols = [
+                    ("occasions", "JSON"),
+                    ("lifestyle", "JSON"),
+                    ("priorities", "JSON"),
+                ]
+                for col_name, col_type in new_pref_cols:
+                    if col_name not in pref_cols:
+                        try:
+                            sync_conn.execute(sa.text(f"ALTER TABLE preferences ADD COLUMN {col_name} {col_type}"))
+                        except Exception:
+                            pass
+
+        await conn.run_sync(_migrate)
     yield
 
 app = FastAPI(

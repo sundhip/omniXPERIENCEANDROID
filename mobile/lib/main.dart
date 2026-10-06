@@ -9,6 +9,8 @@ import 'features/auth/login_view.dart';
 import 'features/auth/register_view.dart';
 import 'features/onboarding/onboarding_view.dart';
 import 'features/wardrobe/wardrobe_bloc.dart';
+import 'features/profile/profile_repository.dart';
+import 'features/profile/profile_bloc.dart';
 import 'features/shell/app_shell.dart';
 
 void main() async {
@@ -80,6 +82,11 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
             syncEngine: widget.syncEngine,
           )..add(LoadWardrobeRequested()),
         ),
+        BlocProvider<ProfileBloc>(
+          create: (_) => ProfileBloc(
+            repository: ProfileRepository(apiClient: widget.apiClient),
+          ),
+        ),
       ],
       child: MaterialApp(
         title: 'OmniPresence',
@@ -98,6 +105,13 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
                   }
                   if (state is Authenticated) {
                     _checkInitialOnboardingState();
+                    context.read<ProfileBloc>().add(LoadProfileRequested());
+                  }
+                  if (state is Unauthenticated) {
+                    setState(() {
+                      _hasCompletedOnboarding = false;
+                    });
+                    context.read<ProfileBloc>().add(ResetProfileRequested());
                   }
                 },
                 builder: (context, state) {
@@ -109,12 +123,19 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
                   }
 
                   if (state is Authenticated) {
-                    if (!_hasCompletedOnboarding) {
-                      return OnboardingView(
-                        onComplete: _onOnboardingComplete,
-                      );
-                    }
-                    return const AppShell();
+                    return BlocBuilder<ProfileBloc, ProfileState>(
+                      builder: (context, profileState) {
+                        final bool isProfileOnboarded = profileState is ProfileLoaded
+                            ? profileState.profile.onboardingCompleted
+                            : false;
+                        if (!_hasCompletedOnboarding && !isProfileOnboarded) {
+                          return OnboardingView(
+                            onComplete: _onOnboardingComplete,
+                          );
+                        }
+                        return const AppShell();
+                      },
+                    );
                   }
 
                   if (_showRegister) {

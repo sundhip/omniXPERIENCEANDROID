@@ -60,13 +60,37 @@ class SecureStorage {
     await _storage.write(key: _wardrobeCacheKey, value: jsonStr);
   }
 
+  static const _profileCacheKey = 'op_profile_cache';
+  static const _onboardingDraftKey = 'op_onboarding_draft';
+
+  static Future<String?> getProfileCache() async {
+    return await _storage.read(key: _profileCacheKey);
+  }
+
+  static Future<void> saveProfileCache(String jsonStr) async {
+    await _storage.write(key: _profileCacheKey, value: jsonStr);
+  }
+
+  static Future<String?> getOnboardingDraft() async {
+    return await _storage.read(key: _onboardingDraftKey);
+  }
+
+  static Future<void> saveOnboardingDraft(String jsonStr) async {
+    await _storage.write(key: _onboardingDraftKey, value: jsonStr);
+  }
+
+  static Future<void> clearOnboardingDraft() async {
+    await _storage.delete(key: _onboardingDraftKey);
+  }
+
   static Future<void> clearSession() async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _userIdKey);
     await _storage.delete(key: _userEmailKey);
     await _storage.delete(key: _displayNameKey);
-    // Note: Do not clear onboarding completion flag on simple logout,
-    // so returning user doesn't have to redo onboarding unless explicit reset
+    await _storage.delete(key: _profileCacheKey);
+    await _storage.delete(key: _onboardingCompletedKey);
+    await _storage.delete(key: _onboardingDraftKey);
   }
 
   static Future<void> resetAll() async {

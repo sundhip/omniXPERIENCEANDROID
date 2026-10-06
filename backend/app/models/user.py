@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, Integer, DateTime, JSON, Text, ForeignKey
+from sqlalchemy import Column, String, Boolean, Integer, Float, DateTime, JSON, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.models.database import Base
@@ -22,6 +22,13 @@ class Profile(Base):
     user_id = Column(String(64), ForeignKey("users.id"), unique=True, nullable=False)
     display_name = Column(String(100), nullable=False)
     avatar_url = Column(String(500), nullable=True)
+    age = Column(Integer, nullable=True)
+    gender = Column(String(50), nullable=True)
+    location = Column(String(100), nullable=True)
+    height_cm = Column(Float, nullable=True)
+    weight_kg = Column(Float, nullable=True)
+    body_type = Column(String(50), nullable=True) # slim, athletic, average, broad, other
+    onboarding_completed = Column(Boolean, default=False)
     timezone = Column(String(50), default="UTC")
     locale = Column(String(20), default="en-US")
     gender_preference = Column(String(50), nullable=True)
@@ -37,10 +44,13 @@ class Preference(Base):
     id = Column(String(64), primary_key=True, index=True)
     user_id = Column(String(64), ForeignKey("users.id"), unique=True, nullable=False)
     style_preferences = Column(JSON, default=list) # ["Minimal", "Classic", "Casual", etc.]
-    fit_preference = Column(String(50), default="Regular")
+    fit_preference = Column(String(50), default="Regular") # Slim, Regular, Relaxed, Oversized, Mixed
     preferred_colors = Column(JSON, default=list)
     disliked_colors = Column(JSON, default=list)
     preferred_categories = Column(JSON, default=list)
+    occasions = Column(JSON, default=list) # ["college", "office", "party", etc.]
+    lifestyle = Column(JSON, default=list) # ["work", "gym", "travel", etc.]
+    priorities = Column(JSON, default=dict) # {"comfort": 0.8, "appearance": 0.9, etc.}
     notification_preferences = Column(JSON, default=dict)
     ai_personalization_enabled = Column(Boolean, default=True)
     privacy_settings = Column(JSON, default=dict)
