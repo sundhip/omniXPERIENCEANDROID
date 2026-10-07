@@ -299,12 +299,12 @@ async def update_profile(data: ProfileUpdate, user_id: str = Depends(get_current
     result = await db.execute(select(Profile).where(Profile.user_id == user_id))
     profile = result.scalars().first()
     if not profile:
-        profile = Profile(id=str(uuid.uuid4()), user_id=user_id, display_name="OmniPresence User")
+        profile = Profile(id=str(uuid.uuid4()), user_id=user_id, display_name="OmniPresence User", sync_version=1)
         db.add(profile)
     
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(profile, key, value)
-    profile.sync_version += 1
+    profile.sync_version = (profile.sync_version or 0) + 1
     await db.commit()
     await db.refresh(profile)
     return profile
@@ -314,7 +314,7 @@ async def get_preferences(user_id: str = Depends(get_current_user_id), db: Async
     result = await db.execute(select(Preference).where(Preference.user_id == user_id))
     pref = result.scalars().first()
     if not pref:
-        pref = Preference(id=str(uuid.uuid4()), user_id=user_id)
+        pref = Preference(id=str(uuid.uuid4()), user_id=user_id, sync_version=1)
         db.add(pref)
         await db.commit()
         await db.refresh(pref)
@@ -325,12 +325,62 @@ async def update_preferences(data: PreferenceUpdate, user_id: str = Depends(get_
     result = await db.execute(select(Preference).where(Preference.user_id == user_id))
     pref = result.scalars().first()
     if not pref:
-        pref = Preference(id=str(uuid.uuid4()), user_id=user_id)
+        pref = Preference(id=str(uuid.uuid4()), user_id=user_id, sync_version=1)
         db.add(pref)
         
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(pref, key, value)
-    pref.sync_version += 1
+    pref.sync_version = (pref.sync_version or 0) + 1
     await db.commit()
     await db.refresh(pref)
     return pref
+
+@router.get("/notifications")
+async def get_notification_preferences(
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Preference).where(Preference.user_id == user_id))
+    pref = result.scalars().first()
+    defaults = {
+        "deadlines": True,
+        "budget": True,
+        "habits": True,
+        "conflicts": True,
+        "weather": True,
+    }
+    if not pref or not pref.notification_preferences:
+        return defaults
+    merged = dict(defaults)
+    merged.update(pref.notification_preferences)
+    return merged
+
+@router.put("/notifications")
+async def update_notification_preferences(
+    prefs: dict[str, bool],
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Preference).where(Preference.user_id == user_id))
+    pref = result.scalars().first()
+    if not pref:
+        pref = Preference(id=str(uuid.uuid4()), user_id=user_id, sync_version=1)
+        db.add(pref)
+
+    merged = {
+        "deadlines": True,
+        "budget": True,
+        "habits": True,
+        "conflicts": True,
+        "weather": True,
+    }
+    if pref.notification_preferences:
+        merged.update(pref.notification_preferences)
+    merged.update(prefs)
+    pref.notification_preferences = merged
+    pref.sync_version = (pref.sync_version or 0) + 1
+    await db.commit()
+    await db.refresh(pref)
+    return pref.notification_preferences
+
+

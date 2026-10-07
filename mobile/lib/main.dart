@@ -81,53 +81,60 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
+    return MultiRepositoryProvider(
       providers: [
-        BlocProvider<AuthBloc>(
-          create: (_) => AuthBloc(apiClient: widget.apiClient)..add(SessionCheckRequested()),
-        ),
-        BlocProvider<WardrobeBloc>(
-          create: (_) => WardrobeBloc(
-            apiClient: widget.apiClient,
-            syncEngine: widget.syncEngine,
-          )..add(const LoadWardrobeRequested()),
-        ),
-        BlocProvider<ProfileBloc>(
-          create: (_) => ProfileBloc(
-            repository: ProfileRepository(apiClient: widget.apiClient),
-          ),
-        ),
-        BlocProvider<VisualProfileBloc>(
-          create: (_) => VisualProfileBloc(
-            repository: VisualProfileRepository(apiClient: widget.apiClient),
-          )..add(LoadVisualProfileEvent()),
-        ),
-        BlocProvider<MoneyBloc>(
-          create: (_) => MoneyBloc(
-            repository: MoneyRepository(apiClient: widget.apiClient),
-          )..add(const LoadMoneyData()),
-        ),
-        BlocProvider<WellnessBloc>(
-          create: (_) => WellnessBloc(
-            repository: WellnessRepository(apiClient: widget.apiClient),
-          )..add(const LoadWellnessData()),
-        ),
-        BlocProvider<LearningBloc>(
-          create: (_) => LearningBloc(
-            repository: LearningRepository(apiClient: widget.apiClient),
-          )..add(const LoadLearningData()),
-        ),
-        BlocProvider<PersonalAiBloc>(
-          create: (_) => PersonalAiBloc(
-            repository: PersonalAiRepository(apiClient: widget.apiClient),
-          )..add(const LoadPersonalAiOverviewEvent()),
+        RepositoryProvider<ApiClient>.value(value: widget.apiClient),
+        RepositoryProvider<ProfileRepository>(
+          create: (_) => ProfileRepository(apiClient: widget.apiClient),
         ),
       ],
-      child: MaterialApp(
-        title: 'OmniPresence',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>(
+            create: (_) => AuthBloc(apiClient: widget.apiClient)..add(SessionCheckRequested()),
+          ),
+          BlocProvider<WardrobeBloc>(
+            create: (_) => WardrobeBloc(
+              apiClient: widget.apiClient,
+              syncEngine: widget.syncEngine,
+            )..add(const LoadWardrobeRequested()),
+          ),
+          BlocProvider<ProfileBloc>(
+            create: (_) => ProfileBloc(
+              repository: ProfileRepository(apiClient: widget.apiClient),
+            ),
+          ),
+          BlocProvider<VisualProfileBloc>(
+            create: (_) => VisualProfileBloc(
+              repository: VisualProfileRepository(apiClient: widget.apiClient),
+            )..add(LoadVisualProfileEvent()),
+          ),
+          BlocProvider<MoneyBloc>(
+            create: (_) => MoneyBloc(
+              repository: MoneyRepository(apiClient: widget.apiClient),
+            )..add(const LoadMoneyData()),
+          ),
+          BlocProvider<WellnessBloc>(
+            create: (_) => WellnessBloc(
+              repository: WellnessRepository(apiClient: widget.apiClient),
+            )..add(const LoadWellnessData()),
+          ),
+          BlocProvider<LearningBloc>(
+            create: (_) => LearningBloc(
+              repository: LearningRepository(apiClient: widget.apiClient),
+            )..add(const LoadLearningData()),
+          ),
+          BlocProvider<PersonalAiBloc>(
+            create: (_) => PersonalAiBloc(
+              repository: PersonalAiRepository(apiClient: widget.apiClient),
+            )..add(const LoadPersonalAiOverviewEvent()),
+          ),
+        ],
+        child: MaterialApp(
+          title: 'OmniXPERIENCE',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
         home: _isCheckingOnboarding
             ? const Scaffold(
@@ -197,6 +204,7 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
                   );
                 },
               ),
+        ),
       ),
     );
   }

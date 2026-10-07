@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
 from app.models.personal_ai import ProactiveInsight, ActionProposalRecord, UserMemory
+from app.models.user import Preference
 from app.schemas.personal_ai import (
     PersonalContextSnapshot,
     FilteredContext,
@@ -319,26 +320,32 @@ class PersonalIntelligenceService:
 
         generated_insights: List[Dict[str, Any]] = []
 
-        # 1. Approaching deadlines with low progress
-        for d in snapshot.deadlines:
-            due_iso = d.get("due_date")
-            if due_iso:
-                due_dt = datetime.fromisoformat(due_iso)
-                hours_left = (due_dt - now).total_seconds() / 3600
-                if 0 <= hours_left <= 48:
-                    dedup_key = f"{user_id}:deadline:{d['id']}:{today_date}"
-                    generated_insights.append({
-                        "dedup_key": dedup_key,
-                        "insight_type": "deadline_approaching",
-                        "severity": "urgent",
-                        "title": f"Deadline in {int(hours_left)}h: {d['title']}",
-                        "explanation": f"Task '{d['title']}' is due within {int(hours_left)} hours and is currently marked {d['status']}.",
-                        "supporting_data": d,
-                        "recommended_action": "Allocate immediate work block before deadline."
-                    })
+        # Query user notification preferences
+        pref_res = await db.execute(select(Preference).where(Preference.user_id == user_id))
+        pref = pref_res.scalars().first()
+        notif_prefs = pref.notification_preferences if (pref and pref.notification_preferences) else {}
 
-        # 2. Overloaded day check (>3 events scheduled)
-        if len(snapshot.upcoming_events) >= 3:
+        # 1. Approaching deadlines with low progress (deadlines preference)
+        if notif_prefs.get("deadlines", True):
+            for d in snapshot.deadlines:
+                due_iso = d.get("due_date")
+                if due_iso:
+                    due_dt = datetime.fromisoformat(due_iso)
+                    hours_left = (due_dt - now).total_seconds() / 3600
+                    if 0 <= hours_left <= 48:
+                        dedup_key = f"{user_id}:deadline:{d['id']}:{today_date}"
+                        generated_insights.append({
+                            "dedup_key": dedup_key,
+                            "insight_type": "deadline_approaching",
+                            "severity": "urgent",
+                            "title": f"Deadline in {int(hours_left)}h: {d['title']}",
+                            "explanation": f"Task '{d['title']}' is due within {int(hours_left)} hours and is currently marked {d['status']}.",
+                            "supporting_data": d,
+                            "recommended_action": "Allocate immediate work block before deadline."
+                        })
+
+        # 2. Overloaded day check (>3 events scheduled) (conflicts preference)
+        if notif_prefs.get("conflicts", True) and len(snapshot.upcoming_events) >= 3:
             dedup_key = f"{user_id}:overloaded_day:{today_date}"
             generated_insights.append({
                 "dedup_key": dedup_key,
@@ -350,43 +357,71 @@ class PersonalIntelligenceService:
                 "recommended_action": "Protect 30 minutes of downtime."
             })
 
-        # 3. Budget threshold warning
-        b_state = snapshot.budget_state
-        if b_state.get("over_budget"):
-            dedup_key = f"{user_id}:over_budget:{today_date}"
-            generated_insights.append({
-                "dedup_key": dedup_key,
-                "insight_type": "high_spending",
-                "severity": "urgent",
-                "title": "Monthly Budget Exceeded",
-                "explanation": f"Current spending of ₹{b_state['total_spent_this_month']:,.0f} has exceeded your ₹{b_state['monthly_budget']:,.0f} budget.",
-                "supporting_data": b_state,
-                "recommended_action": "Halt discretionary purchases until the next billing cycle."
-            })
-        elif b_state.get("monthly_budget", 0) > 0 and b_state["total_spent_this_month"] / b_state["monthly_budget"] > 0.85:
-            dedup_key = f"{user_id}:high_spending:{today_date}"
-            generated_insights.append({
-                "dedup_key": dedup_key,
-                "insight_type": "high_spending",
-                "severity": "warning",
-                "title": "Budget Alert (85% Reached)",
-                "explanation": f"You have spent 85% of your ₹{b_state['monthly_budget']:,.0f} monthly allocation.",
-                "supporting_data": b_state,
-                "recommended_action": "Review remaining month expenses."
-            })
-
-        # 4. Neglected active goals
-        for g in snapshot.active_goals:
-            if g.get("progress", 0) < 30 and g.get("milestones_count", 0) > 0 and g.get("completed_milestones", 0) == 0:
-                dedup_key = f"{user_id}:neglected_goal:{g['id']}:{today_date}"
+        # 3. Budget threshold warning (budget preference)
+        if notif_prefs.get("budget", True):
+            b_state = snapshot.budget_state
+            if b_state.get("over_budget"):
+                dedup_key = f"{user_id}:over_budget:{today_date}"
                 generated_insights.append({
                     "dedup_key": dedup_key,
-                    "insight_type": "neglected_goal",
+                    "insight_type": "high_spending",
+                    "severity": "urgent",
+                    "title": "Monthly Budget Exceeded",
+                    "explanation": f"Current spending of ₹{b_state['total_spent_this_month']:,.0f} has exceeded your ₹{b_state['monthly_budget']:,.0f} budget.",
+                    "supporting_data": b_state,
+                    "recommended_action": "Halt discretionary purchases until the next billing cycle."
+                })
+            elif b_state.get("monthly_budget", 0) > 0 and b_state["total_spent_this_month"] / b_state["monthly_budget"] > 0.85:
+                dedup_key = f"{user_id}:high_spending:{today_date}"
+                generated_insights.append({
+                    "dedup_key": dedup_key,
+                    "insight_type": "high_spending",
+                    "severity": "warning",
+                    "title": "Budget Alert (85% Reached)",
+                    "explanation": f"You have spent 85% of your ₹{b_state['monthly_budget']:,.0f} monthly allocation.",
+                    "supporting_data": b_state,
+                    "recommended_action": "Review remaining month expenses."
+                })
+
+        # 4. Neglected active goals (habits / goals preference)
+        if notif_prefs.get("habits", True):
+            for g in snapshot.active_goals:
+                if g.get("progress", 0) < 30 and g.get("milestones_count", 0) > 0 and g.get("completed_milestones", 0) == 0:
+                    dedup_key = f"{user_id}:neglected_goal:{g['id']}:{today_date}"
+                    generated_insights.append({
+                        "dedup_key": dedup_key,
+                        "insight_type": "neglected_goal",
+                        "severity": "info",
+                        "title": f"Goal Check-In: {g['title']}",
+                        "explanation": f"Active goal '{g['title']}' has no completed milestones recorded yet.",
+                        "supporting_data": g,
+                        "recommended_action": "Break down the first milestone into manageable tasks."
+                    })
+
+        # 5. Weather alerts (weather preference)
+        if notif_prefs.get("weather", True) and snapshot.weather:
+            w = snapshot.weather
+            if w.get("is_rainy"):
+                dedup_key = f"{user_id}:weather_rain:{today_date}"
+                generated_insights.append({
+                    "dedup_key": dedup_key,
+                    "insight_type": "weather_alert",
                     "severity": "info",
-                    "title": f"Goal Check-In: {g['title']}",
-                    "explanation": f"Active goal '{g['title']}' has no completed milestones recorded yet.",
-                    "supporting_data": g,
-                    "recommended_action": "Break down the first milestone into manageable tasks."
+                    "title": f"Rain Alert: {w.get('condition_text', 'Precipitation')}",
+                    "explanation": f"Rain expected ({w.get('temperature_c', 24.0)}°C). Plan travel with an umbrella and suitable footwear.",
+                    "supporting_data": w,
+                    "recommended_action": "Carry rain protection and water-resistant footwear."
+                })
+            elif w.get("temperature_c", 25.0) >= 36.0:
+                dedup_key = f"{user_id}:weather_heat:{today_date}"
+                generated_insights.append({
+                    "dedup_key": dedup_key,
+                    "insight_type": "weather_alert",
+                    "severity": "warning",
+                    "title": f"Heat Alert: {w.get('temperature_c', 36.0)}°C",
+                    "explanation": "High ambient temperatures today. Stay hydrated and schedule outdoor activities during cooler hours.",
+                    "supporting_data": w,
+                    "recommended_action": "Keep water handy and wear breathable light clothing."
                 })
 
         # Persist and deduplicate

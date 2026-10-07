@@ -35,6 +35,8 @@ class RegisterSubmitted extends AuthEvent {
 
 class LogoutRequested extends AuthEvent {}
 
+class DeleteAccountRequested extends AuthEvent {}
+
 abstract class AuthState extends Equatable {
   const AuthState();
   @override
@@ -189,6 +191,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutRequested>((event, emit) async {
       await SecureStorage.clearSession();
       emit(Unauthenticated());
+    });
+
+    on<DeleteAccountRequested>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        await apiClient.dio.delete('/auth/me');
+      } catch (_) {
+        // Purge session regardless of network status
+      } finally {
+        await SecureStorage.clearSession();
+        emit(Unauthenticated());
+      }
     });
   }
 }

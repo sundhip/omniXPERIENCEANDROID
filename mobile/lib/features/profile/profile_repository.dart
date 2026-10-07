@@ -81,4 +81,29 @@ class ProfileRepository {
   Future<void> saveCachedProfile(UserProfileModel profile) async {
     await SecureStorage.saveProfileCache(jsonEncode(profile.toJson()));
   }
+
+  Future<Map<String, bool>> getNotificationPreferences() async {
+    try {
+      final res = await apiClient.dio.get('/profile/notifications');
+      if (res.data is Map) {
+        return Map<String, bool>.from(
+          (res.data as Map).map((k, v) => MapEntry(k.toString(), v == true)),
+        );
+      }
+    } catch (_) {}
+    return {
+      'deadlines': true,
+      'budget': true,
+      'habits': true,
+      'conflicts': true,
+      'weather': true,
+    };
+  }
+
+  Future<void> updateNotificationPreferences(Map<String, bool> prefs) async {
+    try {
+      await apiClient.dio.put('/profile/notifications', data: prefs);
+    } catch (_) {}
+  }
 }
+

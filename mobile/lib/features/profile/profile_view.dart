@@ -10,6 +10,7 @@ import '../auth/auth_bloc.dart';
 import '../onboarding/onboarding_view.dart';
 import 'models/user_profile_model.dart';
 import 'profile_bloc.dart';
+import 'profile_repository.dart';
 import 'edit_profile_view.dart';
 import 'visual_profile_bloc.dart';
 import 'visual_profile_view.dart';
@@ -43,7 +44,7 @@ class _ProfileViewState extends State<ProfileView> {
       builder: (ctx) {
         return AlertDialog(
           title: const Text('Log Out'),
-          content: const Text('Are you sure you want to log out of OmniPresence?'),
+          content: const Text('Are you sure you want to log out of OmniXPERIENCE?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
@@ -61,6 +62,213 @@ class _ProfileViewState extends State<ProfileView> {
       },
     );
   }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Delete Account & Data'),
+          content: const Text(
+            'This will permanently delete your account, schedule, wardrobe, financial logs, wellness routines, and personal AI context from our servers in compliance with Google Play Store data safety requirements.\n\nThis action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _showFinalDeleteConfirmation(context);
+              },
+              child: const Text('Proceed to Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showFinalDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Final Confirmation'),
+          content: const Text(
+            'Are you absolutely sure? All your data across every domain will be immediately and irreversibly purged.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.read<AuthBloc>().add(DeleteAccountRequested());
+              },
+              child: const Text('Delete Permanently', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showPrivacyPolicyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('OmniXPERIENCE Privacy Policy'),
+          content: const SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '1. Data Minimization & Security',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'OmniXPERIENCE operates as your personal life operating system. We collect only the data necessary to provide scheduling, wardrobe intelligence, personal finance tracking, and wellness routines.',
+                ),
+                SizedBox(height: 12),
+                Text(
+                  '2. Computer Vision & Media Data',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Photos uploaded for style and wardrobe analysis are processed securely and scoped strictly to your account. We do not sell or monetize personal images.',
+                ),
+                SizedBox(height: 12),
+                Text(
+                  '3. Financial & Wellness Confidentiality',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Your expenses, budgets, habits, and skincare data remain strictly confidential. Calculations are performed deterministically.',
+                ),
+                SizedBox(height: 12),
+                Text(
+                  '4. Account & Data Deletion Rights',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'In compliance with Google Play Store policies, you may permanently purge your account and all associated personal data anytime using the Delete Account option in your profile.',
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showNotificationPreferencesDialog(BuildContext context) async {
+    final repo = context.read<ProfileRepository>();
+    final currentPrefs = await repo.getNotificationPreferences();
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: this.context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Proactive Intelligence Preferences',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Choose which categories trigger proactive alerts and recommendations.',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('Upcoming Deadlines'),
+                    subtitle: const Text('Alerts for tasks due within 48 hours'),
+                    value: currentPrefs['deadlines'] ?? true,
+                    onChanged: (val) {
+                      setModalState(() => currentPrefs['deadlines'] = val);
+                      repo.updateNotificationPreferences(currentPrefs);
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('Budget & Spending Alerts'),
+                    subtitle: const Text('Alerts when reaching 85% or exceeding monthly limit'),
+                    value: currentPrefs['budget'] ?? true,
+                    onChanged: (val) {
+                      setModalState(() => currentPrefs['budget'] = val);
+                      repo.updateNotificationPreferences(currentPrefs);
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('Habits & Milestone Reminders'),
+                    subtitle: const Text('Pings for neglected active goals and daily routines'),
+                    value: currentPrefs['habits'] ?? true,
+                    onChanged: (val) {
+                      setModalState(() => currentPrefs['habits'] = val);
+                      repo.updateNotificationPreferences(currentPrefs);
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('Calendar & Workload Warnings'),
+                    subtitle: const Text('Suggestions when daily meetings exceed capacity'),
+                    value: currentPrefs['conflicts'] ?? true,
+                    onChanged: (val) {
+                      setModalState(() => currentPrefs['conflicts'] = val);
+                      repo.updateNotificationPreferences(currentPrefs);
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('Weather & Environmental Alerts'),
+                    subtitle: const Text('Rain and extreme temperature preparation tips'),
+                    value: currentPrefs['weather'] ?? true,
+                    onChanged: (val) {
+                      setModalState(() => currentPrefs['weather'] = val);
+                      repo.updateNotificationPreferences(currentPrefs);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Done'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
 
   void _navigateToEdit(BuildContext context, UserProfileModel profile) {
     Navigator.push(
@@ -610,6 +818,42 @@ class _ProfileViewState extends State<ProfileView> {
                         icon: const Icon(Icons.refresh_rounded, size: 18),
                         label: const Text('Re-take Style Assessment'),
                         onPressed: () => _reenterOnboarding(context),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // PRIVACY, PREFERENCES & DATA SAFETY SECTION
+                    _buildSectionTitle('Privacy & Intelligence Settings', colors),
+                    AppCard(
+                      child: Column(
+                        children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(Icons.tune_rounded, color: colors.primary),
+                            title: Text('Proactive Intelligence Alerts', style: AppTypography.label.copyWith(fontWeight: FontWeight.w600, color: colors.textPrimary)),
+                            subtitle: Text('Configure deadlines, budget, habits & weather', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _showNotificationPreferencesDialog(context),
+                          ),
+                          Divider(color: colors.border, height: 1),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.shield_outlined, color: Colors.teal),
+                            title: Text('Data Safety & Privacy Policy', style: AppTypography.label.copyWith(fontWeight: FontWeight.w600, color: colors.textPrimary)),
+                            subtitle: Text('Play Store compliant user data policies', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _showPrivacyPolicyDialog(context),
+                          ),
+                          Divider(color: colors.border, height: 1),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.delete_forever_outlined, color: Colors.red),
+                            title: const Text('Delete Account & All Data', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red)),
+                            subtitle: Text('Permanently erase all personal data', style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                            trailing: const Icon(Icons.chevron_right, color: Colors.red),
+                            onTap: () => _showDeleteAccountDialog(context),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 32),
