@@ -11,6 +11,7 @@ class HomeView extends StatelessWidget {
   final VoidCallback? onOpenProductivity;
   final VoidCallback? onOpenMoney;
   final VoidCallback? onOpenWellness;
+  final VoidCallback? onOpenLearning;
 
   const HomeView({
     super.key,
@@ -19,6 +20,7 @@ class HomeView extends StatelessWidget {
     this.onOpenProductivity,
     this.onOpenMoney,
     this.onOpenWellness,
+    this.onOpenLearning,
   });
 
   @override
@@ -157,6 +159,39 @@ class HomeView extends StatelessWidget {
                           Text("Wellness & Routines", style: AppTypography.label.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary)),
                           const SizedBox(height: 2),
                           Text("Skincare steps, habits & truthful streaks", style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, size: 14, color: colors.textMuted),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppGeometry.gapNormal),
+            ],
+
+            // Learn & Goals Card
+            if (onOpenLearning != null) ...[
+              AppCard(
+                onTap: onOpenLearning,
+                backgroundColor: colors.surfaceSoft,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.indigo.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.school_outlined, color: Colors.indigo, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Learn & Goals", style: AppTypography.label.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary)),
+                          const SizedBox(height: 2),
+                          Text("Subjects, goals, milestones & AI planning", style: AppTypography.caption.copyWith(color: colors.textSecondary)),
                         ],
                       ),
                     ),

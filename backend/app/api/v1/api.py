@@ -3,7 +3,8 @@ from app.api.v1.endpoints import (
     auth, profile, wardrobe, wear_events, outfits,
     recommendations, weather, sync, visual_profile,
     events, tasks, productivity,
-    expenses, budgets, finance, habits, wellness
+    expenses, budgets, finance, habits, wellness,
+    learning, goals, study_sessions, knowledge_notes, projects
 )
 
 api_router = APIRouter()
@@ -20,6 +21,11 @@ api_router.include_router(budgets.router, prefix="/budgets", tags=["Budgets"])
 api_router.include_router(finance.router, prefix="/finance", tags=["Financial Intelligence"])
 api_router.include_router(habits.router, prefix="/habits", tags=["Habits"])
 api_router.include_router(wellness.router, prefix="/wellness", tags=["Wellness & Routines"])
+api_router.include_router(learning.router, prefix="/learning", tags=["Learning & Responsibilities"])
+api_router.include_router(goals.router, prefix="/goals", tags=["Goals & Milestones"])
+api_router.include_router(study_sessions.router, prefix="/study-sessions", tags=["Study & Work Sessions"])
+api_router.include_router(knowledge_notes.router, prefix="/notes", tags=["Knowledge & Notes"])
+api_router.include_router(projects.router, prefix="/projects", tags=["Personal Projects"])
 api_router.include_router(wear_events.router, prefix="/wear-events", tags=["Wear History"])
 api_router.include_router(outfits.router, prefix="/outfits", tags=["Outfit Planning"])
 api_router.include_router(recommendations.router, prefix="/recommendations", tags=["AI Recommendations"])

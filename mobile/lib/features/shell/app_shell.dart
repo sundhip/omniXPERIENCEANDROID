@@ -7,6 +7,7 @@ import '../recommendations/recommendation_view.dart';
 import '../profile/profile_view.dart';
 import '../money/views/money_container_view.dart';
 import '../wellness/views/wellness_container_view.dart';
+import '../learning/views/learn_dashboard_view.dart';
 import 'home_view.dart';
 
 class AppShell extends StatefulWidget {
@@ -42,6 +43,9 @@ class _AppShellState extends State<AppShell> {
                     ),
                     onOpenWellness: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const WellnessContainerView()),
+                    ),
+                    onOpenLearning: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const LearnDashboardView()),
                     ),
                   ),
                   const WardrobeView(),

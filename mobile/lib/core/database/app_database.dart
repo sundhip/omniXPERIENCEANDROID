@@ -1344,3 +1344,689 @@ class TodayWellnessModel extends Equatable {
   ];
 }
 
+// ==========================================
+// PHASE 7: LEARNING, GOALS & PERSONAL MANAGEMENT
+// ==========================================
+
+class LearningItemModel extends Equatable {
+  final String id;
+  final String userId;
+  final String title;
+  final String? description;
+  final String type; // subject, course, certification, skill, project_task, exam, assignment, milestone, topic
+  final String category; // Academic, Work, Skill, Personal, Research, Project
+  final String status; // Not Started, In Progress, Completed, Paused, Cancelled
+  final String priority; // Low, Medium, High, Urgent
+  final double progress; // 0.0 to 100.0
+  final DateTime? targetDate;
+  final int estimatedDurationMinutes;
+  final String? parentId;
+  final List<String> tags;
+  final List<String> relatedTaskIds;
+  final String? relatedGoalId;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const LearningItemModel({
+    required this.id,
+    required this.userId,
+    required this.title,
+    this.description,
+    this.type = 'subject',
+    this.category = 'Academic',
+    this.status = 'Not Started',
+    this.priority = 'Medium',
+    this.progress = 0.0,
+    this.targetDate,
+    this.estimatedDurationMinutes = 60,
+    this.parentId,
+    this.tags = const [],
+    this.relatedTaskIds = const [],
+    this.relatedGoalId,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  LearningItemModel copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? description,
+    String? type,
+    String? category,
+    String? status,
+    String? priority,
+    double? progress,
+    DateTime? targetDate,
+    int? estimatedDurationMinutes,
+    String? parentId,
+    List<String>? tags,
+    List<String>? relatedTaskIds,
+    String? relatedGoalId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return LearningItemModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      type: type ?? this.type,
+      category: category ?? this.category,
+      status: status ?? this.status,
+      priority: priority ?? this.priority,
+      progress: progress ?? this.progress,
+      targetDate: targetDate ?? this.targetDate,
+      estimatedDurationMinutes: estimatedDurationMinutes ?? this.estimatedDurationMinutes,
+      parentId: parentId ?? this.parentId,
+      tags: tags ?? this.tags,
+      relatedTaskIds: relatedTaskIds ?? this.relatedTaskIds,
+      relatedGoalId: relatedGoalId ?? this.relatedGoalId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  factory LearningItemModel.fromJson(Map<String, dynamic> json) {
+    return LearningItemModel(
+      id: json['id'] ?? '',
+      userId: json['user_id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'],
+      type: json['type'] ?? 'subject',
+      category: json['category'] ?? 'Academic',
+      status: json['status'] ?? 'Not Started',
+      priority: json['priority'] ?? 'Medium',
+      progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
+      targetDate: json['target_date'] != null ? DateTime.tryParse(json['target_date']) : null,
+      estimatedDurationMinutes: json['estimated_duration_minutes'] ?? 60,
+      parentId: json['parent_id'],
+      tags: List<String>.from(json['tags'] ?? []),
+      relatedTaskIds: List<String>.from(json['related_task_ids'] ?? []),
+      relatedGoalId: json['related_goal_id'],
+      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'title': title,
+      'description': description,
+      'type': type,
+      'category': category,
+      'status': status,
+      'priority': priority,
+      'progress': progress,
+      'target_date': targetDate?.toIso8601String(),
+      'estimated_duration_minutes': estimatedDurationMinutes,
+      'parent_id': parentId,
+      'tags': tags,
+      'related_task_ids': relatedTaskIds,
+      'related_goal_id': relatedGoalId,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+    id, userId, title, description, type, category, status,
+    priority, progress, targetDate, estimatedDurationMinutes,
+    parentId, tags, relatedTaskIds, relatedGoalId
+  ];
+}
+
+class GoalMilestoneModel extends Equatable {
+  final String id;
+  final String title;
+  final bool completed;
+  final String? targetDate;
+  final int order;
+
+  const GoalMilestoneModel({
+    required this.id,
+    required this.title,
+    this.completed = false,
+    this.targetDate,
+    this.order = 1,
+  });
+
+  GoalMilestoneModel copyWith({
+    String? id,
+    String? title,
+    bool? completed,
+    String? targetDate,
+    int? order,
+  }) {
+    return GoalMilestoneModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      completed: completed ?? this.completed,
+      targetDate: targetDate ?? this.targetDate,
+      order: order ?? this.order,
+    );
+  }
+
+  factory GoalMilestoneModel.fromJson(Map<String, dynamic> json) {
+    return GoalMilestoneModel(
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
+      completed: json['completed'] ?? false,
+      targetDate: json['target_date'],
+      order: json['order'] ?? 1,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'completed': completed,
+      'target_date': targetDate,
+      'order': order,
+    };
+  }
+
+  @override
+  List<Object?> get props => [id, title, completed, targetDate, order];
+}
+
+class GoalModel extends Equatable {
+  final String id;
+  final String userId;
+  final String title;
+  final String? description;
+  final String category; // Academic, Career, Financial, Fitness, Personal, Project, Learning
+  final String priority; // Low, Medium, High, Urgent
+  final String status; // Active, Completed, Paused, Cancelled
+  final DateTime? targetDate;
+  final double progress; // 0.0 to 100.0
+  final List<GoalMilestoneModel> milestones;
+  final List<String> relatedTaskIds;
+  final double? financialTargetAmount;
+  final double financialSavedAmount;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const GoalModel({
+    required this.id,
+    required this.userId,
+    required this.title,
+    this.description,
+    this.category = 'Personal',
+    this.priority = 'Medium',
+    this.status = 'Active',
+    this.targetDate,
+    this.progress = 0.0,
+    this.milestones = const [],
+    this.relatedTaskIds = const [],
+    this.financialTargetAmount,
+    this.financialSavedAmount = 0.0,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  GoalModel copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? description,
+    String? category,
+    String? priority,
+    String? status,
+    DateTime? targetDate,
+    double? progress,
+    List<GoalMilestoneModel>? milestones,
+    List<String>? relatedTaskIds,
+    double? financialTargetAmount,
+    double? financialSavedAmount,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return GoalModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      priority: priority ?? this.priority,
+      status: status ?? this.status,
+      targetDate: targetDate ?? this.targetDate,
+      progress: progress ?? this.progress,
+      milestones: milestones ?? this.milestones,
+      relatedTaskIds: relatedTaskIds ?? this.relatedTaskIds,
+      financialTargetAmount: financialTargetAmount ?? this.financialTargetAmount,
+      financialSavedAmount: financialSavedAmount ?? this.financialSavedAmount,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  factory GoalModel.fromJson(Map<String, dynamic> json) {
+    return GoalModel(
+      id: json['id'] ?? '',
+      userId: json['user_id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'],
+      category: json['category'] ?? 'Personal',
+      priority: json['priority'] ?? 'Medium',
+      status: json['status'] ?? 'Active',
+      targetDate: json['target_date'] != null ? DateTime.tryParse(json['target_date']) : null,
+      progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
+      milestones: (json['milestones'] as List? ?? []).map((m) => GoalMilestoneModel.fromJson(m)).toList(),
+      relatedTaskIds: List<String>.from(json['related_task_ids'] ?? []),
+      financialTargetAmount: (json['financial_target_amount'] as num?)?.toDouble(),
+      financialSavedAmount: (json['financial_saved_amount'] as num?)?.toDouble() ?? 0.0,
+      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'title': title,
+      'description': description,
+      'category': category,
+      'priority': priority,
+      'status': status,
+      'target_date': targetDate?.toIso8601String(),
+      'progress': progress,
+      'milestones': milestones.map((m) => m.toJson()).toList(),
+      'related_task_ids': relatedTaskIds,
+      'financial_target_amount': financialTargetAmount,
+      'financial_saved_amount': financialSavedAmount,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+    id, userId, title, description, category, priority, status,
+    targetDate, progress, milestones, relatedTaskIds,
+    financialTargetAmount, financialSavedAmount
+  ];
+}
+
+class StudySessionModel extends Equatable {
+  final String id;
+  final String userId;
+  final String title;
+  final String? learningItemId;
+  final String? goalId;
+  final String? taskId;
+  final String? eventId;
+  final String sessionType; // Study, Coding, Project, Reading, Assignment, Research, Work, Skill
+  final int plannedDurationMinutes;
+  final int actualDurationMinutes;
+  final DateTime? startTime;
+  final DateTime? endTime;
+  final String status; // Scheduled, In Progress, Completed, Interrupted, Cancelled
+  final String? notes;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const StudySessionModel({
+    required this.id,
+    required this.userId,
+    required this.title,
+    this.learningItemId,
+    this.goalId,
+    this.taskId,
+    this.eventId,
+    this.sessionType = 'Study',
+    this.plannedDurationMinutes = 45,
+    this.actualDurationMinutes = 0,
+    this.startTime,
+    this.endTime,
+    this.status = 'Scheduled',
+    this.notes,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory StudySessionModel.fromJson(Map<String, dynamic> json) {
+    return StudySessionModel(
+      id: json['id'] ?? '',
+      userId: json['user_id'] ?? '',
+      title: json['title'] ?? '',
+      learningItemId: json['learning_item_id'],
+      goalId: json['goal_id'],
+      taskId: json['task_id'],
+      eventId: json['event_id'],
+      sessionType: json['session_type'] ?? 'Study',
+      plannedDurationMinutes: json['planned_duration_minutes'] ?? 45,
+      actualDurationMinutes: json['actual_duration_minutes'] ?? 0,
+      startTime: json['start_time'] != null ? DateTime.tryParse(json['start_time']) : null,
+      endTime: json['end_time'] != null ? DateTime.tryParse(json['end_time']) : null,
+      status: json['status'] ?? 'Scheduled',
+      notes: json['notes'],
+      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'title': title,
+      'learning_item_id': learningItemId,
+      'goal_id': goalId,
+      'task_id': taskId,
+      'event_id': eventId,
+      'session_type': sessionType,
+      'planned_duration_minutes': plannedDurationMinutes,
+      'actual_duration_minutes': actualDurationMinutes,
+      'start_time': startTime?.toIso8601String(),
+      'end_time': endTime?.toIso8601String(),
+      'status': status,
+      'notes': notes,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+    id, userId, title, learningItemId, goalId, taskId, eventId,
+    sessionType, plannedDurationMinutes, actualDurationMinutes,
+    startTime, endTime, status, notes
+  ];
+}
+
+class KnowledgeNoteModel extends Equatable {
+  final String id;
+  final String userId;
+  final String title;
+  final String content;
+  final List<String> tags;
+  final String linkedEntityType; // learning_item, goal, project, task, general
+  final String? linkedEntityId;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const KnowledgeNoteModel({
+    required this.id,
+    required this.userId,
+    required this.title,
+    required this.content,
+    this.tags = const [],
+    this.linkedEntityType = 'general',
+    this.linkedEntityId,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory KnowledgeNoteModel.fromJson(Map<String, dynamic> json) {
+    return KnowledgeNoteModel(
+      id: json['id'] ?? '',
+      userId: json['user_id'] ?? '',
+      title: json['title'] ?? '',
+      content: json['content'] ?? '',
+      tags: List<String>.from(json['tags'] ?? []),
+      linkedEntityType: json['linked_entity_type'] ?? 'general',
+      linkedEntityId: json['linked_entity_id'],
+      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'title': title,
+      'content': content,
+      'tags': tags,
+      'linked_entity_type': linkedEntityType,
+      'linked_entity_id': linkedEntityId,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+    id, userId, title, content, tags, linkedEntityType, linkedEntityId
+  ];
+}
+
+class ProjectModel extends Equatable {
+  final String id;
+  final String userId;
+  final String title;
+  final String? description;
+  final String category; // Development, Research, Startup, Content, Freelance, Personal
+  final String status; // Active, Completed, Paused, Cancelled
+  final String priority; // Low, Medium, High, Urgent
+  final DateTime? targetDate;
+  final double progress;
+  final String? relatedGoalId;
+  final List<String> relatedTaskIds;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const ProjectModel({
+    required this.id,
+    required this.userId,
+    required this.title,
+    this.description,
+    this.category = 'Development',
+    this.status = 'Active',
+    this.priority = 'Medium',
+    this.targetDate,
+    this.progress = 0.0,
+    this.relatedGoalId,
+    this.relatedTaskIds = const [],
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory ProjectModel.fromJson(Map<String, dynamic> json) {
+    return ProjectModel(
+      id: json['id'] ?? '',
+      userId: json['user_id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'],
+      category: json['category'] ?? 'Development',
+      status: json['status'] ?? 'Active',
+      priority: json['priority'] ?? 'Medium',
+      targetDate: json['target_date'] != null ? DateTime.tryParse(json['target_date']) : null,
+      progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
+      relatedGoalId: json['related_goal_id'],
+      relatedTaskIds: List<String>.from(json['related_task_ids'] ?? []),
+      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'title': title,
+      'description': description,
+      'category': category,
+      'status': status,
+      'priority': priority,
+      'target_date': targetDate?.toIso8601String(),
+      'progress': progress,
+      'related_goal_id': relatedGoalId,
+      'related_task_ids': relatedTaskIds,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+    id, userId, title, description, category, status, priority,
+    targetDate, progress, relatedGoalId, relatedTaskIds
+  ];
+}
+
+class MilestonePlanSuggestionModel extends Equatable {
+  final String title;
+  final String targetDate;
+  final double estimatedHours;
+  final int order;
+
+  const MilestonePlanSuggestionModel({
+    required this.title,
+    required this.targetDate,
+    required this.estimatedHours,
+    required this.order,
+  });
+
+  factory MilestonePlanSuggestionModel.fromJson(Map<String, dynamic> json) {
+    return MilestonePlanSuggestionModel(
+      title: json['title'] ?? '',
+      targetDate: json['target_date'] ?? '',
+      estimatedHours: (json['estimated_hours'] as num?)?.toDouble() ?? 0.0,
+      order: json['order'] ?? 1,
+    );
+  }
+
+  @override
+  List<Object?> get props => [title, targetDate, estimatedHours, order];
+}
+
+class GoalPlanRecommendationModel extends Equatable {
+  final String goalId;
+  final String goalTitle;
+  final bool feasible;
+  final double totalEstimatedHours;
+  final double weeklyHoursRequired;
+  final String deadlineStatus; // On Track, Tight, Unrealistic, Passed
+  final List<MilestonePlanSuggestionModel> suggestedMilestones;
+  final String recommendedNextAction;
+  final List<String> detectedConflicts;
+  final String rationale;
+
+  const GoalPlanRecommendationModel({
+    required this.goalId,
+    required this.goalTitle,
+    required this.feasible,
+    required this.totalEstimatedHours,
+    required this.weeklyHoursRequired,
+    required this.deadlineStatus,
+    this.suggestedMilestones = const [],
+    required this.recommendedNextAction,
+    this.detectedConflicts = const [],
+    required this.rationale,
+  });
+
+  factory GoalPlanRecommendationModel.fromJson(Map<String, dynamic> json) {
+    return GoalPlanRecommendationModel(
+      goalId: json['goal_id'] ?? '',
+      goalTitle: json['goal_title'] ?? '',
+      feasible: json['feasible'] ?? true,
+      totalEstimatedHours: (json['total_estimated_hours'] as num?)?.toDouble() ?? 0.0,
+      weeklyHoursRequired: (json['weekly_hours_required'] as num?)?.toDouble() ?? 0.0,
+      deadlineStatus: json['deadline_status'] ?? 'On Track',
+      suggestedMilestones: (json['suggested_milestones'] as List? ?? [])
+          .map((m) => MilestonePlanSuggestionModel.fromJson(m))
+          .toList(),
+      recommendedNextAction: json['recommended_next_action'] ?? '',
+      detectedConflicts: List<String>.from(json['detected_conflicts'] ?? []),
+      rationale: json['rationale'] ?? '',
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    goalId, goalTitle, feasible, totalEstimatedHours, weeklyHoursRequired,
+    deadlineStatus, suggestedMilestones, recommendedNextAction, detectedConflicts, rationale
+  ];
+}
+
+class LearningInsightModel extends Equatable {
+  final String type;
+  final String title;
+  final String description;
+  final String severity; // info, warning, critical
+  final String actionableRecommendation;
+  final Map<String, dynamic> supportingData;
+
+  const LearningInsightModel({
+    required this.type,
+    required this.title,
+    required this.description,
+    required this.severity,
+    required this.actionableRecommendation,
+    this.supportingData = const {},
+  });
+
+  factory LearningInsightModel.fromJson(Map<String, dynamic> json) {
+    return LearningInsightModel(
+      type: json['type'] ?? 'info',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      severity: json['severity'] ?? 'info',
+      actionableRecommendation: json['actionable_recommendation'] ?? '',
+      supportingData: json['supporting_data'] is Map<String, dynamic> ? json['supporting_data'] : {},
+    );
+  }
+
+  @override
+  List<Object?> get props => [type, title, description, severity, actionableRecommendation, supportingData];
+}
+
+class LearnDashboardModel extends Equatable {
+  final List<LearningItemModel> todayLearning;
+  final List<Map<String, dynamic>> todayMilestones;
+  final List<StudySessionModel> todaySessions;
+  final List<Map<String, dynamic>> upcomingDeadlines;
+  final int activeGoalsCount;
+  final int activeLearningCount;
+  final int completedMilestonesCount;
+  final int totalStudyMinutesThisWeek;
+  final List<Map<String, dynamic>> overdueItems;
+  final List<Map<String, dynamic>> atRiskGoals;
+  final List<LearningInsightModel> insights;
+
+  const LearnDashboardModel({
+    this.todayLearning = const [],
+    this.todayMilestones = const [],
+    this.todaySessions = const [],
+    this.upcomingDeadlines = const [],
+    this.activeGoalsCount = 0,
+    this.activeLearningCount = 0,
+    this.completedMilestonesCount = 0,
+    this.totalStudyMinutesThisWeek = 0,
+    this.overdueItems = const [],
+    this.atRiskGoals = const [],
+    this.insights = const [],
+  });
+
+  factory LearnDashboardModel.fromJson(Map<String, dynamic> json) {
+    return LearnDashboardModel(
+      todayLearning: (json['today_learning'] as List? ?? []).map((x) => LearningItemModel.fromJson(x)).toList(),
+      todayMilestones: List<Map<String, dynamic>>.from(json['today_milestones'] ?? []),
+      todaySessions: (json['today_sessions'] as List? ?? []).map((x) => StudySessionModel.fromJson(x)).toList(),
+      upcomingDeadlines: List<Map<String, dynamic>>.from(json['upcoming_deadlines'] ?? []),
+      activeGoalsCount: json['active_goals_count'] ?? 0,
+      activeLearningCount: json['active_learning_count'] ?? 0,
+      completedMilestonesCount: json['completed_milestones_count'] ?? 0,
+      totalStudyMinutesThisWeek: json['total_study_minutes_this_week'] ?? 0,
+      overdueItems: List<Map<String, dynamic>>.from(json['overdue_items'] ?? []),
+      atRiskGoals: List<Map<String, dynamic>>.from(json['at_risk_goals'] ?? []),
+      insights: (json['insights'] as List? ?? []).map((x) => LearningInsightModel.fromJson(x)).toList(),
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    todayLearning, todayMilestones, todaySessions, upcomingDeadlines,
+    activeGoalsCount, activeLearningCount, completedMilestonesCount,
+    totalStudyMinutesThisWeek, overdueItems, atRiskGoals, insights
+  ];
+}
+
+

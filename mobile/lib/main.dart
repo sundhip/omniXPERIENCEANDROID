@@ -17,6 +17,8 @@ import 'features/money/money_repository.dart';
 import 'features/money/money_bloc.dart';
 import 'features/wellness/wellness_repository.dart';
 import 'features/wellness/wellness_bloc.dart';
+import 'features/learning/learning_repository.dart';
+import 'features/learning/learning_bloc.dart';
 import 'features/shell/app_shell.dart';
 
 void main() async {
@@ -108,6 +110,11 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
             repository: WellnessRepository(apiClient: widget.apiClient),
           )..add(const LoadWellnessData()),
         ),
+        BlocProvider<LearningBloc>(
+          create: (_) => LearningBloc(
+            repository: LearningRepository(apiClient: widget.apiClient),
+          )..add(const LoadLearningData()),
+        ),
       ],
       child: MaterialApp(
         title: 'OmniPresence',
@@ -130,6 +137,7 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
                     context.read<VisualProfileBloc>().add(LoadVisualProfileEvent());
                     context.read<MoneyBloc>().add(const LoadMoneyData(forceRefresh: true));
                     context.read<WellnessBloc>().add(const LoadWellnessData(forceRefresh: true));
+                    context.read<LearningBloc>().add(const LoadLearningData(forceRefresh: true));
                   }
                   if (state is Unauthenticated) {
                     setState(() {

@@ -17,6 +17,7 @@ from app.schemas.wardrobe import (
 )
 from app.core.security import get_current_user_id
 from app.services.clothing_ai_service import clothing_ai_service, TAXONOMY, COLOR_PALETTE
+from app.services.vision_service import vision_service
 
 router = APIRouter()
 
@@ -176,6 +177,10 @@ async def analyze_clothing_photo(
         thumbnail_url=thumbnail_url,
         image_validation=result.get("image_validation")
     )
+
+@router.post("/vision/prefill")
+async def vision_prefill(labels: List[str] = Query(default=[]), color: str = Query(default="White")):
+    return vision_service.extract_attributes_from_labels(labels, color)
 
 @router.post("", response_model=WardrobeItemResponse)
 async def create_wardrobe_item(
