@@ -11,6 +11,8 @@ import 'features/onboarding/onboarding_view.dart';
 import 'features/wardrobe/wardrobe_bloc.dart';
 import 'features/profile/profile_repository.dart';
 import 'features/profile/profile_bloc.dart';
+import 'features/profile/visual_profile_repository.dart';
+import 'features/profile/visual_profile_bloc.dart';
 import 'features/shell/app_shell.dart';
 
 void main() async {
@@ -87,6 +89,11 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
             repository: ProfileRepository(apiClient: widget.apiClient),
           ),
         ),
+        BlocProvider<VisualProfileBloc>(
+          create: (_) => VisualProfileBloc(
+            repository: VisualProfileRepository(apiClient: widget.apiClient),
+          )..add(LoadVisualProfileEvent()),
+        ),
       ],
       child: MaterialApp(
         title: 'OmniPresence',
@@ -106,12 +113,14 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
                   if (state is Authenticated) {
                     _checkInitialOnboardingState();
                     context.read<ProfileBloc>().add(LoadProfileRequested());
+                    context.read<VisualProfileBloc>().add(LoadVisualProfileEvent());
                   }
                   if (state is Unauthenticated) {
                     setState(() {
                       _hasCompletedOnboarding = false;
                     });
                     context.read<ProfileBloc>().add(ResetProfileRequested());
+                    context.read<VisualProfileBloc>().add(ResetVisualProfileEvent());
                   }
                 },
                 builder: (context, state) {

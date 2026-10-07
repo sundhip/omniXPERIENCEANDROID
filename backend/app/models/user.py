@@ -14,6 +14,7 @@ class User(Base):
     
     profile = relationship("Profile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     preferences = relationship("Preference", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    visual_profile = relationship("VisualProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 class Profile(Base):
     __tablename__ = "profiles"
@@ -77,3 +78,53 @@ class Preference(Base):
     sync_version = Column(Integer, default=1)
     
     user = relationship("User", back_populates="preferences")
+ 
+class VisualProfile(Base):
+    __tablename__ = "visual_profiles"
+    
+    id = Column(String(64), primary_key=True, index=True)
+    user_id = Column(String(64), ForeignKey("users.id"), unique=True, nullable=False)
+    source_image_id = Column(String(128), nullable=True) # Safe private image filename / UUID
+    face_detected = Column(Boolean, default=False)
+    face_count = Column(Integer, default=0)
+    
+    # Face shape
+    detected_face_shape = Column(String(50), nullable=True) # Oval, Round, Square, Oblong, Heart, Diamond, Triangle, Unknown
+    confirmed_face_shape = Column(String(50), nullable=True)
+    face_shape_confidence = Column(Float, nullable=True)
+    
+    # Skin tone
+    detected_skin_tone = Column(String(50), nullable=True) # Very Light, Light, Medium, Tan, Deep, Unknown
+    confirmed_skin_tone = Column(String(50), nullable=True)
+    skin_tone_confidence = Column(Float, nullable=True)
+    
+    # Skin undertone
+    detected_skin_undertone = Column(String(50), nullable=True) # Warm, Cool, Neutral, Unknown
+    confirmed_skin_undertone = Column(String(50), nullable=True)
+    skin_undertone_confidence = Column(Float, nullable=True)
+    
+    # Hair attributes
+    hair_visible = Column(Boolean, default=True)
+    detected_hair_length = Column(String(50), nullable=True) # Short, Medium, Long, Bald/Buzz, Unknown
+    confirmed_hair_length = Column(String(50), nullable=True)
+    detected_hair_texture = Column(String(50), nullable=True) # Straight, Wavy, Curly, Coily, Unknown
+    confirmed_hair_texture = Column(String(50), nullable=True)
+    hair_confidence = Column(Float, nullable=True)
+    
+    # Image Quality metrics
+    image_quality = Column(JSON, default=dict)
+    quality_score = Column(Float, nullable=True)
+    
+    # User Confirmation flag
+    confirmed_by_user = Column(Boolean, default=False)
+    
+    # Provenance and Model Metadata
+    analysis_method = Column(String(50), default="mediapipe_geometry")
+    model_name = Column(String(100), default="MediaPipe Face Landmarker")
+    model_version = Column(String(50), default="1.1.0")
+    analysis_version = Column(String(50), default="1.0.0")
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("User", back_populates="visual_profile")

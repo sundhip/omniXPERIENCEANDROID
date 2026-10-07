@@ -157,6 +157,7 @@ class FullProfileResponse(BaseModel):
     personal_style_profile: Dict[str, Any] = {}
     personalization_version: int = 1
     ai_personalization_enabled: bool = True
+    visual_profile: Optional[Dict[str, Any]] = None
     
     created_at: datetime
     updated_at: datetime

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'visual_profile_model.dart';
 
 class UserProfileModel extends Equatable {
   final String id;
@@ -13,6 +14,9 @@ class UserProfileModel extends Equatable {
   final double? weightKg;
   final String? bodyType; // Slim, Athletic, Average, Broad, Prefer not to say
   final bool onboardingCompleted;
+
+  // Phase 3 Visual Profile
+  final VisualProfileModel? visualProfile;
 
   // Phase 1 & 2 Style & Fit
   final List<String> stylePreferences;
@@ -107,6 +111,7 @@ class UserProfileModel extends Equatable {
     this.personalStyleProfile,
     this.personalizationVersion = 1,
     this.aiPersonalizationEnabled = true,
+    this.visualProfile,
   });
 
   UserProfileModel copyWith({
@@ -148,6 +153,7 @@ class UserProfileModel extends Equatable {
     Map<String, dynamic>? personalStyleProfile,
     int? personalizationVersion,
     bool? aiPersonalizationEnabled,
+    VisualProfileModel? visualProfile,
   }) {
     return UserProfileModel(
       id: id ?? this.id,
@@ -188,6 +194,7 @@ class UserProfileModel extends Equatable {
       personalStyleProfile: personalStyleProfile ?? this.personalStyleProfile,
       personalizationVersion: personalizationVersion ?? this.personalizationVersion,
       aiPersonalizationEnabled: aiPersonalizationEnabled ?? this.aiPersonalizationEnabled,
+      visualProfile: visualProfile ?? this.visualProfile,
     );
   }
 
@@ -231,6 +238,7 @@ class UserProfileModel extends Equatable {
       'personal_style_profile': personalStyleProfile ?? {},
       'personalization_version': personalizationVersion,
       'ai_personalization_enabled': aiPersonalizationEnabled,
+      'visual_profile': visualProfile?.toJson(),
     };
   }
 
@@ -358,6 +366,9 @@ class UserProfileModel extends Equatable {
           ? json['personalization_version'] as int
           : 1,
       aiPersonalizationEnabled: json['ai_personalization_enabled'] != false,
+      visualProfile: json['visual_profile'] is Map<String, dynamic>
+          ? VisualProfileModel.fromJson(json['visual_profile'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -416,6 +427,9 @@ class UserProfileModel extends Equatable {
     if (topOccasions.isNotEmpty) {
       buffer.write(' You dress most frequently for ${topOccasions.take(3).join(', ')}.');
     }
+    if (visualProfile != null && visualProfile!.faceDetected) {
+      buffer.write(' Visual appearance: ${visualProfile!.visualSummary}.');
+    }
     return buffer.toString();
   }
 
@@ -433,6 +447,7 @@ class UserProfileModel extends Equatable {
         weightKg,
         bodyType,
         onboardingCompleted,
+        visualProfile,
         stylePreferences,
         primaryStyle,
         secondaryStyles,

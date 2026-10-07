@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import uuid
 from app.models.database import get_db
-from app.models.user import User, Profile, Preference
+from app.models.user import User, Profile, Preference, VisualProfile
 from app.schemas.profile import (
     ProfileUpdate, ProfileResponse, 
     PreferenceUpdate, PreferenceResponse,
@@ -70,6 +70,31 @@ async def get_full_profile(user_id: str = Depends(get_current_user_id), db: Asyn
         await db.commit()
         await db.refresh(pref)
 
+    vp_res = await db.execute(select(VisualProfile).where(VisualProfile.user_id == user_id))
+    vp = vp_res.scalars().first()
+    vp_data = None
+    if vp:
+        vp_data = {
+            "id": vp.id,
+            "source_image_id": vp.source_image_id,
+            "face_detected": vp.face_detected,
+            "detected_face_shape": vp.detected_face_shape,
+            "confirmed_face_shape": vp.confirmed_face_shape,
+            "face_shape_confidence": vp.face_shape_confidence,
+            "detected_skin_tone": vp.detected_skin_tone,
+            "confirmed_skin_tone": vp.confirmed_skin_tone,
+            "skin_tone_confidence": vp.skin_tone_confidence,
+            "detected_skin_undertone": vp.detected_skin_undertone,
+            "confirmed_skin_undertone": vp.confirmed_skin_undertone,
+            "detected_hair_length": vp.detected_hair_length,
+            "confirmed_hair_length": vp.confirmed_hair_length,
+            "detected_hair_texture": vp.detected_hair_texture,
+            "confirmed_hair_texture": vp.confirmed_hair_texture,
+            "hair_confidence": vp.hair_confidence,
+            "confirmed_by_user": vp.confirmed_by_user,
+            "analysis_date": vp.created_at.isoformat() if vp.created_at else None
+        }
+
     return FullProfileResponse(
         id=profile.id,
         user_id=user_id,
@@ -109,6 +134,7 @@ async def get_full_profile(user_id: str = Depends(get_current_user_id), db: Asyn
         personal_style_profile=style_profile,
         personalization_version=pref.personalization_version or 1,
         ai_personalization_enabled=pref.ai_personalization_enabled,
+        visual_profile=vp_data,
         created_at=profile.created_at,
         updated_at=profile.updated_at,
         sync_version=profile.sync_version,
@@ -187,6 +213,31 @@ async def update_full_profile(data: FullProfileUpdate, user_id: str = Depends(ge
     await db.refresh(profile)
     await db.refresh(pref)
 
+    vp_res = await db.execute(select(VisualProfile).where(VisualProfile.user_id == user_id))
+    vp = vp_res.scalars().first()
+    vp_data = None
+    if vp:
+        vp_data = {
+            "id": vp.id,
+            "source_image_id": vp.source_image_id,
+            "face_detected": vp.face_detected,
+            "detected_face_shape": vp.detected_face_shape,
+            "confirmed_face_shape": vp.confirmed_face_shape,
+            "face_shape_confidence": vp.face_shape_confidence,
+            "detected_skin_tone": vp.detected_skin_tone,
+            "confirmed_skin_tone": vp.confirmed_skin_tone,
+            "skin_tone_confidence": vp.skin_tone_confidence,
+            "detected_skin_undertone": vp.detected_skin_undertone,
+            "confirmed_skin_undertone": vp.confirmed_skin_undertone,
+            "detected_hair_length": vp.detected_hair_length,
+            "confirmed_hair_length": vp.confirmed_hair_length,
+            "detected_hair_texture": vp.detected_hair_texture,
+            "confirmed_hair_texture": vp.confirmed_hair_texture,
+            "hair_confidence": vp.hair_confidence,
+            "confirmed_by_user": vp.confirmed_by_user,
+            "analysis_date": vp.created_at.isoformat() if vp.created_at else None
+        }
+
     return FullProfileResponse(
         id=profile.id,
         user_id=user_id,
@@ -226,6 +277,7 @@ async def update_full_profile(data: FullProfileUpdate, user_id: str = Depends(ge
         personal_style_profile=style_profile,
         personalization_version=pref.personalization_version or 1,
         ai_personalization_enabled=pref.ai_personalization_enabled,
+        visual_profile=vp_data,
         created_at=profile.created_at,
         updated_at=profile.updated_at,
         sync_version=profile.sync_version,

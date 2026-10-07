@@ -11,6 +11,8 @@ import '../onboarding/onboarding_view.dart';
 import 'models/user_profile_model.dart';
 import 'profile_bloc.dart';
 import 'edit_profile_view.dart';
+import 'visual_profile_bloc.dart';
+import 'visual_profile_view.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -260,6 +262,128 @@ class _ProfileViewState extends State<ProfileView> {
                           ),
                         ],
                       ),
+                    ),
+                    const SizedBox(height: AppGeometry.gapLarge),
+
+                    // VISUAL PROFILE & APPEARANCE AI SECTION
+                    _buildSectionTitle('Visual Profile & Appearance AI', colors),
+                    BlocBuilder<VisualProfileBloc, VisualProfileState>(
+                      builder: (context, vState) {
+                        final vProfile = vState is VisualProfileLoaded
+                            ? vState.profile
+                            : profile.visualProfile;
+
+                        if (vProfile != null && vProfile.faceDetected) {
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [colors.primary.withValues(alpha: 0.12), colors.surfaceSoft],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(AppGeometry.radiusCard),
+                              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.face_retouching_natural, color: colors.primary, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text('Appearance Intelligence', style: AppTypography.label.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
+                                    const Spacer(),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.verified, color: Colors.green, size: 12),
+                                          SizedBox(width: 4),
+                                          Text('Confirmed', style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  vProfile.visualSummary,
+                                  style: AppTypography.body.copyWith(fontSize: 13, fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _buildMiniBadge("Face Shape", vProfile.displayFaceShape, colors),
+                                    _buildMiniBadge("Skin Tone", vProfile.displaySkinTone, colors),
+                                    _buildMiniBadge("Hair", vProfile.displayHairType, colors),
+                                  ],
+                                ),
+                                const SizedBox(height: 14),
+                                SecondaryButton(
+                                  label: 'Manage Visual Profile',
+                                  icon: Icon(Icons.tune, size: 18, color: colors.primary),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const VisualProfileView()),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        // Not configured yet
+                        return AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: colors.primary.withValues(alpha: 0.1),
+                                    child: Icon(Icons.camera_alt_outlined, color: colors.primary, size: 20),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Set Up Visual Profile', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold)),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Run computer-vision face geometry & skin tone analysis',
+                                          style: AppTypography.caption.copyWith(color: colors.textSecondary),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              AppButton(
+                                label: 'Scan Face & Build Visual Profile',
+                                icon: const Icon(Icons.auto_awesome, size: 18, color: Colors.white),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const VisualProfileView()),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: AppGeometry.gapLarge),
 

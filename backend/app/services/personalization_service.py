@@ -217,3 +217,45 @@ class PersonalizationService:
             "summary_text": summary,
             "calculated_at": datetime.utcnow().isoformat(),
         }
+
+    @classmethod
+    def build_connected_personal_context(
+        cls,
+        personal_style_profile: Dict[str, Any],
+        visual_profile: Optional[Dict[str, Any]] = None,
+        user_profile: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Unified Context Engine Hook for future AI modules (Phase 4 Wardrobe AI, Phase 5 Outfit AI).
+        Connects Person Identity, Visual Appearance Profile, and Personalization Preferences.
+        Prioritizes user-confirmed attributes over unconfirmed AI detections.
+        """
+        vis_context = {}
+        if visual_profile:
+            vis_context = {
+                "face_shape": visual_profile.get("confirmed_face_shape") or visual_profile.get("detected_face_shape"),
+                "skin_tone": visual_profile.get("confirmed_skin_tone") or visual_profile.get("detected_skin_tone"),
+                "skin_undertone": visual_profile.get("confirmed_skin_undertone") or visual_profile.get("detected_skin_undertone"),
+                "hair_length": visual_profile.get("confirmed_hair_length") or visual_profile.get("detected_hair_length"),
+                "hair_texture": visual_profile.get("confirmed_hair_texture") or visual_profile.get("detected_hair_texture"),
+                "confirmed_by_user": visual_profile.get("confirmed_by_user", False),
+                "has_visual_profile": True
+            }
+        else:
+            vis_context = {
+                "has_visual_profile": False,
+                "face_shape": None,
+                "skin_tone": None,
+                "skin_undertone": None,
+                "hair_length": None,
+                "hair_texture": None,
+                "confirmed_by_user": False
+            }
+
+        return {
+            "personal_identity": user_profile or {},
+            "style_preferences": personal_style_profile or {},
+            "visual_profile": vis_context,
+            "ready_for_wardrobe_ai": True,
+            "context_version": "3.0.0"
+        }

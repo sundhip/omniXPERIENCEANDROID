@@ -72,6 +72,9 @@ def run_migrations(sync_conn):
                 except Exception:
                     pass
 
+    # Ensure any new tables like visual_profiles are created
+    Base.metadata.create_all(bind=sync_conn)
+
 async def get_db():
     async with AsyncSessionLocal() as session:
         try:
