@@ -3,7 +3,7 @@ import '../../core/theme/app_theme.dart';
 import '../../shared/components/state_banners.dart';
 import '../wardrobe/wardrobe_view.dart';
 import '../productivity/productivity_container_view.dart';
-import '../recommendations/recommendation_view.dart';
+import '../personal_ai/views/ask_omni_view.dart';
 import '../profile/profile_view.dart';
 import '../money/views/money_container_view.dart';
 import '../wellness/views/wellness_container_view.dart';
@@ -49,7 +49,7 @@ class _AppShellState extends State<AppShell> {
                     ),
                   ),
                   const WardrobeView(),
-                  const RecommendationView(),
+                  const AskOmniView(),
                   const ProductivityContainerView(),
                   const ProfileView(),
                 ],

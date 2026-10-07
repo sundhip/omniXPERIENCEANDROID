@@ -4,7 +4,8 @@ from app.api.v1.endpoints import (
     recommendations, weather, sync, visual_profile,
     events, tasks, productivity,
     expenses, budgets, finance, habits, wellness,
-    learning, goals, study_sessions, knowledge_notes, projects
+    learning, goals, study_sessions, knowledge_notes, projects,
+    personal_ai
 )
 
 api_router = APIRouter()
@@ -30,4 +31,5 @@ api_router.include_router(wear_events.router, prefix="/wear-events", tags=["Wear
 api_router.include_router(outfits.router, prefix="/outfits", tags=["Outfit Planning"])
 api_router.include_router(recommendations.router, prefix="/recommendations", tags=["AI Recommendations"])
 api_router.include_router(weather.router, prefix="/weather", tags=["Weather"])
+api_router.include_router(personal_ai.router, prefix="/personal-ai", tags=["Personal AI & Context Intelligence"])
 api_router.include_router(sync.router, prefix="/sync", tags=["Sync"])

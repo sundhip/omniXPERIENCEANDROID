@@ -107,6 +107,7 @@ def run_migrations(sync_conn):
     from app.models.finance import Expense, Budget
     from app.models.wellness import Habit, HabitLog, SkincareProfile, RoutineProduct
     from app.models.learning import LearningItem, Goal, StudySession, KnowledgeNote, Project
+    from app.models.personal_ai import UserMemory, ProactiveInsight, ActionProposalRecord
 
     # Ensure any new tables are created
     Base.metadata.create_all(bind=sync_conn)

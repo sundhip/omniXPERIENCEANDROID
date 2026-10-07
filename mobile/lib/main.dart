@@ -19,6 +19,8 @@ import 'features/wellness/wellness_repository.dart';
 import 'features/wellness/wellness_bloc.dart';
 import 'features/learning/learning_repository.dart';
 import 'features/learning/learning_bloc.dart';
+import 'features/personal_ai/personal_ai_repository.dart';
+import 'features/personal_ai/personal_ai_bloc.dart';
 import 'features/shell/app_shell.dart';
 
 void main() async {
@@ -115,6 +117,11 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
             repository: LearningRepository(apiClient: widget.apiClient),
           )..add(const LoadLearningData()),
         ),
+        BlocProvider<PersonalAiBloc>(
+          create: (_) => PersonalAiBloc(
+            repository: PersonalAiRepository(apiClient: widget.apiClient),
+          )..add(const LoadPersonalAiOverviewEvent()),
+        ),
       ],
       child: MaterialApp(
         title: 'OmniPresence',
@@ -138,6 +145,7 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
                     context.read<MoneyBloc>().add(const LoadMoneyData(forceRefresh: true));
                     context.read<WellnessBloc>().add(const LoadWellnessData(forceRefresh: true));
                     context.read<LearningBloc>().add(const LoadLearningData(forceRefresh: true));
+                    context.read<PersonalAiBloc>().add(const LoadPersonalAiOverviewEvent());
                   }
                   if (state is Unauthenticated) {
                     setState(() {

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_geometry.dart';
 import '../../core/theme/app_typography.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../shared/components/app_card.dart';
 import '../../shared/components/ai_insight_card.dart';
+import '../personal_ai/personal_ai_bloc.dart';
+import '../personal_ai/views/daily_brief_card.dart';
 
 class HomeView extends StatelessWidget {
   final VoidCallback onExploreWardrobe;
@@ -61,6 +64,21 @@ class HomeView extends StatelessWidget {
           ),
           const SizedBox(height: AppGeometry.gapLarge),
           
+          // Phase 8 Daily Personal Brief
+          BlocBuilder<PersonalAiBloc, PersonalAiState>(
+            builder: (context, state) {
+              if (state.dailyBrief != null) {
+                return Column(
+                  children: [
+                    DailyBriefCard(brief: state.dailyBrief!, onOpenAi: onAskOPAI),
+                    const SizedBox(height: AppGeometry.gapLarge),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+
           // OP AI Smart Insight Card
           AIInsightCard(
             title: "OP AI Insight",

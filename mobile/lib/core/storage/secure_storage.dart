@@ -164,6 +164,23 @@ class SecureStorage {
   static Future<String?> getLearnDashboardCache() async => await _storage.read(key: _learnDashboardCacheKey);
   static Future<void> saveLearnDashboardCache(String jsonStr) async => await _storage.write(key: _learnDashboardCacheKey, value: jsonStr);
 
+  static const _dailyBriefCacheKey = 'op_daily_brief_cache';
+  static const _insightsCacheKey = 'op_insights_cache';
+  static const _chatHistoryCacheKey = 'op_chat_history_cache';
+  static const _memoriesCacheKey = 'op_memories_cache';
+
+  static Future<String?> getDailyBriefCache() async => await _storage.read(key: _dailyBriefCacheKey);
+  static Future<void> saveDailyBriefCache(String jsonStr) async => await _storage.write(key: _dailyBriefCacheKey, value: jsonStr);
+
+  static Future<String?> getInsightsCache() async => await _storage.read(key: _insightsCacheKey);
+  static Future<void> saveInsightsCache(String jsonStr) async => await _storage.write(key: _insightsCacheKey, value: jsonStr);
+
+  static Future<String?> getChatHistoryCache() async => await _storage.read(key: _chatHistoryCacheKey);
+  static Future<void> saveChatHistoryCache(String jsonStr) async => await _storage.write(key: _chatHistoryCacheKey, value: jsonStr);
+
+  static Future<String?> getMemoriesCache() async => await _storage.read(key: _memoriesCacheKey);
+  static Future<void> saveMemoriesCache(String jsonStr) async => await _storage.write(key: _memoriesCacheKey, value: jsonStr);
+
   static Future<void> clearOnboardingDraft() async {
     await _storage.delete(key: _onboardingDraftKey);
   }
