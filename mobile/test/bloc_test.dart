@@ -51,7 +51,7 @@ void main() {
     });
   });
 
-  group('WardrobeBloc Unit Tests', () {
+  group('WardrobeBloc Phase 4 Unit Tests', () {
     late ApiClient apiClient;
     late SyncEngine syncEngine;
     late WardrobeBloc wardrobeBloc;
@@ -70,36 +70,19 @@ void main() {
       expect(wardrobeBloc.state, equals(WardrobeInitial()));
     });
 
-    test('LoadWardrobeRequested populates initial items', () async {
-      wardrobeBloc.add(LoadWardrobeRequested());
+    test('LoadWardrobeRequested populates state cleanly without fake mocks', () async {
+      wardrobeBloc.add(const LoadWardrobeRequested());
       await expectLater(
         wardrobeBloc.stream,
         emitsInOrder([
           isA<WardrobeLoading>(),
-          predicate<WardrobeState>((s) => s is WardrobeLoaded && s.allItems.isNotEmpty),
+          isA<WardrobeLoaded>(),
         ]),
       );
     });
 
-    test('CategoryFilterChanged filters items correctly', () async {
-      wardrobeBloc.add(LoadWardrobeRequested());
-      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded);
-
-      wardrobeBloc.add(const CategoryFilterChanged('Tops'));
-      await expectLater(
-        wardrobeBloc.stream,
-        emits(predicate<WardrobeState>((s) {
-          if (s is WardrobeLoaded) {
-            return s.selectedCategory == 'Tops' &&
-                s.filteredItems.every((item) => item.category.toLowerCase() == 'tops');
-          }
-          return false;
-        })),
-      );
-    });
-
-    test('AddWardrobeItemSubmitted inserts item at index 0', () async {
-      wardrobeBloc.add(LoadWardrobeRequested());
+    test('AddWardrobeItemSubmitted inserts item and updates state', () async {
+      wardrobeBloc.add(const LoadWardrobeRequested());
       await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded);
 
       const newItem = WardrobeItemModel(
@@ -107,8 +90,12 @@ void main() {
         category: 'Tops',
         subcategory: 'Polo',
         name: 'Test Black Polo',
+        primaryColor: 'Black',
         colors: ['Black'],
         formality: 'Smart Casual',
+        pattern: 'Solid',
+        aiAnalyzed: true,
+        aiConfidence: 0.94,
       );
 
       wardrobeBloc.add(const AddWardrobeItemSubmitted(newItem));
@@ -116,27 +103,92 @@ void main() {
         wardrobeBloc.stream,
         emits(predicate<WardrobeState>((s) {
           if (s is WardrobeLoaded) {
-            return s.allItems.any((item) => item.id == 'test_item_99');
+            return s.allItems.any((item) => item.id == 'test_item_99') &&
+                   s.allItems.first.aiAnalyzed == true &&
+                   s.allItems.first.pattern == 'Solid';
           }
           return false;
         })),
       );
     });
 
-    test('DeleteItemRequested removes item from list', () async {
-      wardrobeBloc.add(LoadWardrobeRequested());
+    test('CategoryFilterChanged filters items correctly', () async {
+      wardrobeBloc.add(const LoadWardrobeRequested());
       await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded);
 
-      wardrobeBloc.add(const DeleteItemRequested('item_1'));
-      await expectLater(
-        wardrobeBloc.stream,
-        emits(predicate<WardrobeState>((s) {
-          if (s is WardrobeLoaded) {
-            return !s.allItems.any((item) => item.id == 'item_1');
-          }
-          return false;
-        })),
+      const itemTop = WardrobeItemModel(
+        id: 'item_top',
+        category: 'Tops',
+        subcategory: 'T-Shirt',
+        name: 'Blue Tee',
+        colors: ['Blue'],
       );
+      const itemBottom = WardrobeItemModel(
+        id: 'item_bottom',
+        category: 'Bottoms',
+        subcategory: 'Jeans',
+        name: 'Indigo Jeans',
+        colors: ['Blue'],
+      );
+
+      wardrobeBloc.add(const AddWardrobeItemSubmitted(itemTop));
+      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && (s as WardrobeLoaded).allItems.length == 1);
+
+      wardrobeBloc.add(const AddWardrobeItemSubmitted(itemBottom));
+      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && (s as WardrobeLoaded).allItems.length == 2);
+
+      wardrobeBloc.add(const CategoryFilterChanged('Tops'));
+      final filteredState = await wardrobeBloc.stream.firstWhere(
+        (s) => s is WardrobeLoaded && (s as WardrobeLoaded).selectedCategory == 'Tops',
+      ) as WardrobeLoaded;
+
+      expect(filteredState.selectedCategory, 'Tops');
+      expect(filteredState.filteredItems.length, 1);
+      expect(filteredState.filteredItems.first.category, 'Tops');
+    });
+
+    test('ToggleItemFavoriteRequested toggles favorite on item', () async {
+      wardrobeBloc.add(const LoadWardrobeRequested());
+      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded);
+
+      const item = WardrobeItemModel(
+        id: 'fav_item_1',
+        category: 'Tops',
+        subcategory: 'Shirt',
+        name: 'Oxford Shirt',
+        favorite: false,
+      );
+      wardrobeBloc.add(const AddWardrobeItemSubmitted(item));
+      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && (s as WardrobeLoaded).allItems.any((i) => i.id == 'fav_item_1'));
+
+      wardrobeBloc.add(const ToggleItemFavoriteRequested('fav_item_1'));
+      final favState = await wardrobeBloc.stream.firstWhere(
+        (s) => s is WardrobeLoaded && (s as WardrobeLoaded).allItems.any((i) => i.id == 'fav_item_1' && i.favorite),
+      ) as WardrobeLoaded;
+
+      final found = favState.allItems.firstWhere((i) => i.id == 'fav_item_1');
+      expect(found.favorite, isTrue);
+    });
+
+    test('DeleteItemRequested removes item from list', () async {
+      wardrobeBloc.add(const LoadWardrobeRequested());
+      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded);
+
+      const item = WardrobeItemModel(
+        id: 'del_item_1',
+        category: 'Outerwear',
+        subcategory: 'Jacket',
+        name: 'Leather Jacket',
+      );
+      wardrobeBloc.add(const AddWardrobeItemSubmitted(item));
+      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && (s as WardrobeLoaded).allItems.any((i) => i.id == 'del_item_1'));
+
+      wardrobeBloc.add(const DeleteItemRequested('del_item_1'));
+      final delState = await wardrobeBloc.stream.firstWhere(
+        (s) => s is WardrobeLoaded && !(s as WardrobeLoaded).allItems.any((i) => i.id == 'del_item_1'),
+      ) as WardrobeLoaded;
+
+      expect(delState.allItems.any((i) => i.id == 'del_item_1'), isFalse);
     });
   });
 }

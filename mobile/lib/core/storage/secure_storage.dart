@@ -60,6 +60,10 @@ class SecureStorage {
     await _storage.write(key: _wardrobeCacheKey, value: jsonStr);
   }
 
+  static Future<void> setWardrobeCache(String jsonStr) async {
+    await saveWardrobeCache(jsonStr);
+  }
+
   static const _profileCacheKey = 'op_profile_cache';
   static const _onboardingDraftKey = 'op_onboarding_draft';
 

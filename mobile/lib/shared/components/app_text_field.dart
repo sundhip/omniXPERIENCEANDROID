@@ -6,6 +6,7 @@ import '../../core/theme/app_typography.dart';
 class AppTextField extends StatelessWidget {
   final String label;
   final String? hint;
+  final String? hintText;
   final TextEditingController? controller;
   final bool obscureText;
   final TextInputType? keyboardType;
@@ -13,9 +14,13 @@ class AppTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final ValueChanged<String>? onChanged;
   final FormFieldValidator<String>? validator;
+  final int maxLines;
 
-  const AppTextField({super.key, required this.label,
+  const AppTextField({
+    super.key,
+    required this.label,
     this.hint,
+    this.hintText,
     this.controller,
     this.obscureText = false,
     this.keyboardType,
@@ -23,11 +28,14 @@ class AppTextField extends StatelessWidget {
     this.suffixIcon,
     this.onChanged,
     this.validator,
+    this.maxLines = 1,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final effectiveHint = hintText ?? hint;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -43,11 +51,12 @@ class AppTextField extends StatelessWidget {
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          maxLines: maxLines,
           onChanged: onChanged,
           validator: validator,
           style: AppTypography.body.copyWith(color: colors.textPrimary),
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: effectiveHint,
             hintStyle: AppTypography.body.copyWith(color: colors.textMuted),
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
@@ -78,12 +87,16 @@ class AppTextField extends StatelessWidget {
 }
 
 class SearchField extends StatelessWidget {
-  final String hint;
+  final String? hint;
+  final String? hintText;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onClear;
   final TextEditingController? controller;
 
-  const SearchField({super.key, this.hint = 'Search wardrobe...',
+  const SearchField({
+    super.key,
+    this.hint,
+    this.hintText,
     this.onChanged,
     this.onClear,
     this.controller,
@@ -92,12 +105,14 @@ class SearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final effectiveHint = hintText ?? hint ?? 'Search wardrobe...';
+
     return TextField(
       controller: controller,
       onChanged: onChanged,
       style: AppTypography.body.copyWith(color: colors.textPrimary),
       decoration: InputDecoration(
-        hintText: hint,
+        hintText: effectiveHint,
         hintStyle: AppTypography.body.copyWith(color: colors.textMuted),
         prefixIcon: Icon(Icons.search, color: colors.textMuted, size: 20),
         filled: true,

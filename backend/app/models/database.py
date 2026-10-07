@@ -72,6 +72,32 @@ def run_migrations(sync_conn):
                 except Exception:
                     pass
 
+    if "wardrobe_items" in tables:
+        wardrobe_cols = {c["name"] for c in inspector.get_columns("wardrobe_items")}
+        new_wardrobe_cols = [
+            ("primary_color", "VARCHAR(50)"),
+            ("secondary_colors", "JSON"),
+            ("pattern", "VARCHAR(50) DEFAULT 'Solid'"),
+            ("style_tags", "JSON"),
+            ("occasion_tags", "JSON"),
+            ("season_tags", "JSON"),
+            ("favorite", "BOOLEAN DEFAULT 0"),
+            ("ai_analyzed", "BOOLEAN DEFAULT 0"),
+            ("ai_confidence", "FLOAT"),
+            ("ai_model", "VARCHAR(100)"),
+            ("ai_model_version", "VARCHAR(50)"),
+            ("analysis_version", "VARCHAR(50)"),
+            ("user_confirmed", "BOOLEAN DEFAULT 1"),
+            ("size", "VARCHAR(20)"),
+            ("currency", "VARCHAR(10) DEFAULT 'USD'"),
+        ]
+        for col_name, col_type in new_wardrobe_cols:
+            if col_name not in wardrobe_cols:
+                try:
+                    sync_conn.execute(sa.text(f"ALTER TABLE wardrobe_items ADD COLUMN {col_name} {col_type}"))
+                except Exception:
+                    pass
+
     # Ensure any new tables like visual_profiles are created
     Base.metadata.create_all(bind=sync_conn)
 
