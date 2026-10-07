@@ -98,7 +98,14 @@ def run_migrations(sync_conn):
                 except Exception:
                     pass
 
-    # Ensure any new tables like visual_profiles are created
+    # Import all models so metadata knows all tables
+    from app.models.user import User, Profile, Preference, VisualProfile
+    from app.models.wardrobe import WardrobeCategory, WardrobeItem, MediaAsset
+    from app.models.wear_event import WearEvent
+    from app.models.outfit import Outfit, CalendarEvent
+    from app.models.productivity import Event, Task
+
+    # Ensure any new tables like events and tasks are created
     Base.metadata.create_all(bind=sync_conn)
 
 async def get_db():

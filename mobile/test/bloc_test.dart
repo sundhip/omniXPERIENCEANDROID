@@ -132,14 +132,14 @@ void main() {
       );
 
       wardrobeBloc.add(const AddWardrobeItemSubmitted(itemTop));
-      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && (s as WardrobeLoaded).allItems.length == 1);
+      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && s.allItems.length == 1);
 
       wardrobeBloc.add(const AddWardrobeItemSubmitted(itemBottom));
-      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && (s as WardrobeLoaded).allItems.length == 2);
+      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && s.allItems.length == 2);
 
       wardrobeBloc.add(const CategoryFilterChanged('Tops'));
       final filteredState = await wardrobeBloc.stream.firstWhere(
-        (s) => s is WardrobeLoaded && (s as WardrobeLoaded).selectedCategory == 'Tops',
+        (s) => s is WardrobeLoaded && s.selectedCategory == 'Tops',
       ) as WardrobeLoaded;
 
       expect(filteredState.selectedCategory, 'Tops');
@@ -159,11 +159,11 @@ void main() {
         favorite: false,
       );
       wardrobeBloc.add(const AddWardrobeItemSubmitted(item));
-      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && (s as WardrobeLoaded).allItems.any((i) => i.id == 'fav_item_1'));
+      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && s.allItems.any((i) => i.id == 'fav_item_1'));
 
       wardrobeBloc.add(const ToggleItemFavoriteRequested('fav_item_1'));
       final favState = await wardrobeBloc.stream.firstWhere(
-        (s) => s is WardrobeLoaded && (s as WardrobeLoaded).allItems.any((i) => i.id == 'fav_item_1' && i.favorite),
+        (s) => s is WardrobeLoaded && s.allItems.any((i) => i.id == 'fav_item_1' && i.favorite),
       ) as WardrobeLoaded;
 
       final found = favState.allItems.firstWhere((i) => i.id == 'fav_item_1');
@@ -181,11 +181,11 @@ void main() {
         name: 'Leather Jacket',
       );
       wardrobeBloc.add(const AddWardrobeItemSubmitted(item));
-      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && (s as WardrobeLoaded).allItems.any((i) => i.id == 'del_item_1'));
+      await wardrobeBloc.stream.firstWhere((s) => s is WardrobeLoaded && s.allItems.any((i) => i.id == 'del_item_1'));
 
       wardrobeBloc.add(const DeleteItemRequested('del_item_1'));
       final delState = await wardrobeBloc.stream.firstWhere(
-        (s) => s is WardrobeLoaded && !(s as WardrobeLoaded).allItems.any((i) => i.id == 'del_item_1'),
+        (s) => s is WardrobeLoaded && !s.allItems.any((i) => i.id == 'del_item_1'),
       ) as WardrobeLoaded;
 
       expect(delState.allItems.any((i) => i.id == 'del_item_1'), isFalse);

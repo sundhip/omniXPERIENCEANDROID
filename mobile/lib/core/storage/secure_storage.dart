@@ -83,6 +83,25 @@ class SecureStorage {
     await _storage.write(key: _onboardingDraftKey, value: jsonStr);
   }
 
+  static const _eventsCacheKey = 'op_events_cache';
+  static const _tasksCacheKey = 'op_tasks_cache';
+
+  static Future<String?> getEventsCache() async {
+    return await _storage.read(key: _eventsCacheKey);
+  }
+
+  static Future<void> saveEventsCache(String jsonStr) async {
+    await _storage.write(key: _eventsCacheKey, value: jsonStr);
+  }
+
+  static Future<String?> getTasksCache() async {
+    return await _storage.read(key: _tasksCacheKey);
+  }
+
+  static Future<void> saveTasksCache(String jsonStr) async {
+    await _storage.write(key: _tasksCacheKey, value: jsonStr);
+  }
+
   static Future<void> clearOnboardingDraft() async {
     await _storage.delete(key: _onboardingDraftKey);
   }

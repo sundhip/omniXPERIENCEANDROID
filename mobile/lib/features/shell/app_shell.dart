@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/components/state_banners.dart';
 import '../wardrobe/wardrobe_view.dart';
-import '../outfit_planner/outfit_planner_view.dart';
+import '../productivity/productivity_container_view.dart';
 import '../recommendations/recommendation_view.dart';
 import '../profile/profile_view.dart';
 import 'home_view.dart';
@@ -34,10 +34,11 @@ class _AppShellState extends State<AppShell> {
                   HomeView(
                     onExploreWardrobe: () => setState(() => _currentIndex = 1),
                     onAskOPAI: () => setState(() => _currentIndex = 2),
+                    onOpenProductivity: () => setState(() => _currentIndex = 3),
                   ),
                   const WardrobeView(),
                   const RecommendationView(),
-                  const OutfitPlannerView(),
+                  const ProductivityContainerView(),
                   const ProfileView(),
                 ],
               ),

@@ -8,9 +8,13 @@ import '../../shared/components/ai_insight_card.dart';
 class HomeView extends StatelessWidget {
   final VoidCallback onExploreWardrobe;
   final VoidCallback onAskOPAI;
+  final VoidCallback? onOpenProductivity;
 
-  const HomeView({super.key, required this.onExploreWardrobe,
+  const HomeView({
+    super.key,
+    required this.onExploreWardrobe,
     required this.onAskOPAI,
+    this.onOpenProductivity,
   });
 
   @override
@@ -59,6 +63,39 @@ class HomeView extends StatelessWidget {
             onAction: onAskOPAI,
           ),
           const SizedBox(height: AppGeometry.gapLarge),
+
+          // Productivity Hub Card
+          if (onOpenProductivity != null) ...[
+            AppCard(
+              onTap: onOpenProductivity,
+              backgroundColor: colors.surfaceSoft,
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.today_outlined, color: colors.primary, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Today's Schedule & Tasks", style: AppTypography.label.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary)),
+                        const SizedBox(height: 2),
+                        Text("View timeline, deadlines, and smart planning", style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_ios, size: 14, color: colors.textMuted),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppGeometry.gapLarge),
+          ],
 
           // Quick Action Cards
           Text("Quick Actions", style: AppTypography.h3.copyWith(color: colors.textPrimary)),

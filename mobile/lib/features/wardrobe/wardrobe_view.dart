@@ -185,7 +185,7 @@ class _WardrobeViewState extends State<WardrobeView> {
                     children: [
                       Icon(Icons.error_outline, size: 48, color: colors.error),
                       const SizedBox(height: 12),
-                      Text("Failed to load wardrobe", style: AppTypography.h3),
+                      const Text("Failed to load wardrobe", style: AppTypography.h3),
                       const SizedBox(height: 6),
                       Text(state.message, textAlign: TextAlign.center, style: AppTypography.caption),
                       const SizedBox(height: 16),

@@ -82,7 +82,7 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
           create: (_) => WardrobeBloc(
             apiClient: widget.apiClient,
             syncEngine: widget.syncEngine,
-          )..add(LoadWardrobeRequested()),
+          )..add(const LoadWardrobeRequested()),
         ),
         BlocProvider<ProfileBloc>(
           create: (_) => ProfileBloc(

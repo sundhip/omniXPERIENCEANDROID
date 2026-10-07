@@ -315,3 +315,326 @@ class PlannedOutfitModel extends Equatable {
   @override
   List<Object?> get props => [id, name, itemIds, plannedDate, occasion, score];
 }
+
+class EventModel extends Equatable {
+  final String id;
+  final String userId;
+  final String title;
+  final String? description;
+  final DateTime startTime;
+  final DateTime endTime;
+  final bool allDay;
+  final String? location;
+  final String category;
+  final String priority;
+  final String status;
+  final String? color;
+  final String? notes;
+  final Map<String, dynamic>? recurrence;
+  final List<int> reminderSettings;
+  final List<String> relatedTaskIds;
+  final String? relatedGoalId;
+  final String? occasion;
+  final String? sourceType;
+  final String? sourceId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  const EventModel({
+    required this.id,
+    required this.userId,
+    required this.title,
+    this.description,
+    required this.startTime,
+    required this.endTime,
+    this.allDay = false,
+    this.location,
+    this.category = 'Personal',
+    this.priority = 'Medium',
+    this.status = 'scheduled',
+    this.color,
+    this.notes,
+    this.recurrence,
+    this.reminderSettings = const [],
+    this.relatedTaskIds = const [],
+    this.relatedGoalId,
+    this.occasion,
+    this.sourceType,
+    this.sourceId,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  EventModel copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? description,
+    DateTime? startTime,
+    DateTime? endTime,
+    bool? allDay,
+    String? location,
+    String? category,
+    String? priority,
+    String? status,
+    String? color,
+    String? notes,
+    Map<String, dynamic>? recurrence,
+    List<int>? reminderSettings,
+    List<String>? relatedTaskIds,
+    String? relatedGoalId,
+    String? occasion,
+    String? sourceType,
+    String? sourceId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return EventModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      allDay: allDay ?? this.allDay,
+      location: location ?? this.location,
+      category: category ?? this.category,
+      priority: priority ?? this.priority,
+      status: status ?? this.status,
+      color: color ?? this.color,
+      notes: notes ?? this.notes,
+      recurrence: recurrence ?? this.recurrence,
+      reminderSettings: reminderSettings ?? this.reminderSettings,
+      relatedTaskIds: relatedTaskIds ?? this.relatedTaskIds,
+      relatedGoalId: relatedGoalId ?? this.relatedGoalId,
+      occasion: occasion ?? this.occasion,
+      sourceType: sourceType ?? this.sourceType,
+      sourceId: sourceId ?? this.sourceId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  factory EventModel.fromJson(Map<String, dynamic> json) {
+    return EventModel(
+      id: json['id'] ?? '',
+      userId: json['user_id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'],
+      startTime: DateTime.tryParse(json['start_time'] ?? '') ?? DateTime.now(),
+      endTime: DateTime.tryParse(json['end_time'] ?? '') ?? DateTime.now(),
+      allDay: json['all_day'] == true,
+      location: json['location'],
+      category: json['category'] ?? 'Personal',
+      priority: json['priority'] ?? 'Medium',
+      status: json['status'] ?? 'scheduled',
+      color: json['color'],
+      notes: json['notes'],
+      recurrence: json['recurrence'] is Map<String, dynamic> ? json['recurrence'] : null,
+      reminderSettings: List<int>.from(json['reminder_settings'] ?? []),
+      relatedTaskIds: List<String>.from(json['related_task_ids'] ?? []),
+      relatedGoalId: json['related_goal_id'],
+      occasion: json['occasion'],
+      sourceType: json['source_type'],
+      sourceId: json['source_id'],
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'title': title,
+      'description': description,
+      'start_time': startTime.toIso8601String(),
+      'end_time': endTime.toIso8601String(),
+      'all_day': allDay,
+      'location': location,
+      'category': category,
+      'priority': priority,
+      'status': status,
+      'color': color,
+      'notes': notes,
+      'recurrence': recurrence,
+      'reminder_settings': reminderSettings,
+      'related_task_ids': relatedTaskIds,
+      'related_goal_id': relatedGoalId,
+      'occasion': occasion,
+      'source_type': sourceType,
+      'source_id': sourceId,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+    id, userId, title, description, startTime, endTime, allDay, location,
+    category, priority, status, color, notes, recurrence, reminderSettings,
+    relatedTaskIds, relatedGoalId, occasion, sourceType, sourceId, createdAt, updatedAt
+  ];
+}
+
+class TaskModel extends Equatable {
+  final String id;
+  final String userId;
+  final String title;
+  final String? description;
+  final String status;
+  final String priority;
+  final DateTime? dueDate;
+  final String? dueTime;
+  final int estimatedDurationMinutes;
+  final String category;
+  final List<String> tags;
+  final String? eventId;
+  final String? parentTaskId;
+  final List<String> dependencyTaskIds;
+  final Map<String, dynamic>? recurrence;
+  final String? notes;
+  final List<int> reminderSettings;
+  final DateTime? completedAt;
+  final String? sourceType;
+  final String? sourceId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  const TaskModel({
+    required this.id,
+    required this.userId,
+    required this.title,
+    this.description,
+    this.status = 'Todo',
+    this.priority = 'Medium',
+    this.dueDate,
+    this.dueTime,
+    this.estimatedDurationMinutes = 30,
+    this.category = 'Personal',
+    this.tags = const [],
+    this.eventId,
+    this.parentTaskId,
+    this.dependencyTaskIds = const [],
+    this.recurrence,
+    this.notes,
+    this.reminderSettings = const [],
+    this.completedAt,
+    this.sourceType,
+    this.sourceId,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  TaskModel copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? description,
+    String? status,
+    String? priority,
+    DateTime? dueDate,
+    String? dueTime,
+    int? estimatedDurationMinutes,
+    String? category,
+    List<String>? tags,
+    String? eventId,
+    String? parentTaskId,
+    List<String>? dependencyTaskIds,
+    Map<String, dynamic>? recurrence,
+    String? notes,
+    List<int>? reminderSettings,
+    DateTime? completedAt,
+    String? sourceType,
+    String? sourceId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return TaskModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      status: status ?? this.status,
+      priority: priority ?? this.priority,
+      dueDate: dueDate ?? this.dueDate,
+      dueTime: dueTime ?? this.dueTime,
+      estimatedDurationMinutes: estimatedDurationMinutes ?? this.estimatedDurationMinutes,
+      category: category ?? this.category,
+      tags: tags ?? this.tags,
+      eventId: eventId ?? this.eventId,
+      parentTaskId: parentTaskId ?? this.parentTaskId,
+      dependencyTaskIds: dependencyTaskIds ?? this.dependencyTaskIds,
+      recurrence: recurrence ?? this.recurrence,
+      notes: notes ?? this.notes,
+      reminderSettings: reminderSettings ?? this.reminderSettings,
+      completedAt: completedAt ?? this.completedAt,
+      sourceType: sourceType ?? this.sourceType,
+      sourceId: sourceId ?? this.sourceId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  factory TaskModel.fromJson(Map<String, dynamic> json) {
+    return TaskModel(
+      id: json['id'] ?? '',
+      userId: json['user_id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'],
+      status: json['status'] ?? 'Todo',
+      priority: json['priority'] ?? 'Medium',
+      dueDate: json['due_date'] != null ? DateTime.tryParse(json['due_date']) : null,
+      dueTime: json['due_time'],
+      estimatedDurationMinutes: json['estimated_duration_minutes'] ?? 30,
+      category: json['category'] ?? 'Personal',
+      tags: List<String>.from(json['tags'] ?? []),
+      eventId: json['event_id'],
+      parentTaskId: json['parent_task_id'],
+      dependencyTaskIds: List<String>.from(json['dependency_task_ids'] ?? []),
+      recurrence: json['recurrence'] is Map<String, dynamic> ? json['recurrence'] : null,
+      notes: json['notes'],
+      reminderSettings: List<int>.from(json['reminder_settings'] ?? []),
+      completedAt: json['completed_at'] != null ? DateTime.tryParse(json['completed_at']) : null,
+      sourceType: json['source_type'],
+      sourceId: json['source_id'],
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'title': title,
+      'description': description,
+      'status': status,
+      'priority': priority,
+      'due_date': dueDate?.toIso8601String(),
+      'due_time': dueTime,
+      'estimated_duration_minutes': estimatedDurationMinutes,
+      'category': category,
+      'tags': tags,
+      'event_id': eventId,
+      'parent_task_id': parentTaskId,
+      'dependency_task_ids': dependencyTaskIds,
+      'recurrence': recurrence,
+      'notes': notes,
+      'reminder_settings': reminderSettings,
+      'completed_at': completedAt?.toIso8601String(),
+      'source_type': sourceType,
+      'source_id': sourceId,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+    id, userId, title, description, status, priority, dueDate, dueTime,
+    estimatedDurationMinutes, category, tags, eventId, parentTaskId,
+    dependencyTaskIds, recurrence, notes, reminderSettings, completedAt,
+    sourceType, sourceId, createdAt, updatedAt
+  ];
+}
