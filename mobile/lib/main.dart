@@ -13,6 +13,10 @@ import 'features/profile/profile_repository.dart';
 import 'features/profile/profile_bloc.dart';
 import 'features/profile/visual_profile_repository.dart';
 import 'features/profile/visual_profile_bloc.dart';
+import 'features/money/money_repository.dart';
+import 'features/money/money_bloc.dart';
+import 'features/wellness/wellness_repository.dart';
+import 'features/wellness/wellness_bloc.dart';
 import 'features/shell/app_shell.dart';
 
 void main() async {
@@ -94,6 +98,16 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
             repository: VisualProfileRepository(apiClient: widget.apiClient),
           )..add(LoadVisualProfileEvent()),
         ),
+        BlocProvider<MoneyBloc>(
+          create: (_) => MoneyBloc(
+            repository: MoneyRepository(apiClient: widget.apiClient),
+          )..add(const LoadMoneyData()),
+        ),
+        BlocProvider<WellnessBloc>(
+          create: (_) => WellnessBloc(
+            repository: WellnessRepository(apiClient: widget.apiClient),
+          )..add(const LoadWellnessData()),
+        ),
       ],
       child: MaterialApp(
         title: 'OmniPresence',
@@ -114,6 +128,8 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
                     _checkInitialOnboardingState();
                     context.read<ProfileBloc>().add(LoadProfileRequested());
                     context.read<VisualProfileBloc>().add(LoadVisualProfileEvent());
+                    context.read<MoneyBloc>().add(const LoadMoneyData(forceRefresh: true));
+                    context.read<WellnessBloc>().add(const LoadWellnessData(forceRefresh: true));
                   }
                   if (state is Unauthenticated) {
                     setState(() {

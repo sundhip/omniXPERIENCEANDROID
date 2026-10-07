@@ -9,12 +9,16 @@ class HomeView extends StatelessWidget {
   final VoidCallback onExploreWardrobe;
   final VoidCallback onAskOPAI;
   final VoidCallback? onOpenProductivity;
+  final VoidCallback? onOpenMoney;
+  final VoidCallback? onOpenWellness;
 
   const HomeView({
     super.key,
     required this.onExploreWardrobe,
     required this.onAskOPAI,
     this.onOpenProductivity,
+    this.onOpenMoney,
+    this.onOpenWellness,
   });
 
   @override
@@ -96,6 +100,72 @@ class HomeView extends StatelessWidget {
             ),
             const SizedBox(height: AppGeometry.gapLarge),
           ],
+
+          // Money & Expenses Card
+          if (onOpenMoney != null) ...[
+              AppCard(
+                onTap: onOpenMoney,
+                backgroundColor: colors.surfaceSoft,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.account_balance_wallet_outlined, color: Colors.green, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Money & Expenses", style: AppTypography.label.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary)),
+                          const SizedBox(height: 2),
+                          Text("Spending tracking, budgets & analytics", style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, size: 14, color: colors.textMuted),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppGeometry.gapNormal),
+            ],
+
+            // Wellness & Habits Card
+            if (onOpenWellness != null) ...[
+              AppCard(
+                onTap: onOpenWellness,
+                backgroundColor: colors.surfaceSoft,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.spa_outlined, color: Colors.purple, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Wellness & Routines", style: AppTypography.label.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary)),
+                          const SizedBox(height: 2),
+                          Text("Skincare steps, habits & truthful streaks", style: AppTypography.caption.copyWith(color: colors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, size: 14, color: colors.textMuted),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppGeometry.gapLarge),
+            ],
 
           // Quick Action Cards
           Text("Quick Actions", style: AppTypography.h3.copyWith(color: colors.textPrimary)),

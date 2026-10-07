@@ -104,8 +104,10 @@ def run_migrations(sync_conn):
     from app.models.wear_event import WearEvent
     from app.models.outfit import Outfit, CalendarEvent
     from app.models.productivity import Event, Task
+    from app.models.finance import Expense, Budget
+    from app.models.wellness import Habit, HabitLog, SkincareProfile, RoutineProduct
 
-    # Ensure any new tables like events and tasks are created
+    # Ensure any new tables like events, tasks, expenses, budgets, habits, wellness are created
     Base.metadata.create_all(bind=sync_conn)
 
 async def get_db():

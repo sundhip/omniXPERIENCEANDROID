@@ -102,6 +102,43 @@ class SecureStorage {
     await _storage.write(key: _tasksCacheKey, value: jsonStr);
   }
 
+  static const _expensesCacheKey = 'op_expenses_cache';
+  static const _budgetsCacheKey = 'op_budgets_cache';
+  static const _habitsCacheKey = 'op_habits_cache';
+  static const _wellnessCacheKey = 'op_wellness_cache';
+
+  static Future<String?> getExpensesCache() async {
+    return await _storage.read(key: _expensesCacheKey);
+  }
+
+  static Future<void> saveExpensesCache(String jsonStr) async {
+    await _storage.write(key: _expensesCacheKey, value: jsonStr);
+  }
+
+  static Future<String?> getBudgetsCache() async {
+    return await _storage.read(key: _budgetsCacheKey);
+  }
+
+  static Future<void> saveBudgetsCache(String jsonStr) async {
+    await _storage.write(key: _budgetsCacheKey, value: jsonStr);
+  }
+
+  static Future<String?> getHabitsCache() async {
+    return await _storage.read(key: _habitsCacheKey);
+  }
+
+  static Future<void> saveHabitsCache(String jsonStr) async {
+    await _storage.write(key: _habitsCacheKey, value: jsonStr);
+  }
+
+  static Future<String?> getWellnessCache() async {
+    return await _storage.read(key: _wellnessCacheKey);
+  }
+
+  static Future<void> saveWellnessCache(String jsonStr) async {
+    await _storage.write(key: _wellnessCacheKey, value: jsonStr);
+  }
+
   static Future<void> clearOnboardingDraft() async {
     await _storage.delete(key: _onboardingDraftKey);
   }

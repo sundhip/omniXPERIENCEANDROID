@@ -5,6 +5,8 @@ import '../wardrobe/wardrobe_view.dart';
 import '../productivity/productivity_container_view.dart';
 import '../recommendations/recommendation_view.dart';
 import '../profile/profile_view.dart';
+import '../money/views/money_container_view.dart';
+import '../wellness/views/wellness_container_view.dart';
 import 'home_view.dart';
 
 class AppShell extends StatefulWidget {
@@ -35,6 +37,12 @@ class _AppShellState extends State<AppShell> {
                     onExploreWardrobe: () => setState(() => _currentIndex = 1),
                     onAskOPAI: () => setState(() => _currentIndex = 2),
                     onOpenProductivity: () => setState(() => _currentIndex = 3),
+                    onOpenMoney: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const MoneyContainerView()),
+                    ),
+                    onOpenWellness: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const WellnessContainerView()),
+                    ),
                   ),
                   const WardrobeView(),
                   const RecommendationView(),
