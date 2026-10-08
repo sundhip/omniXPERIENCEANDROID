@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme/app_theme.dart';
@@ -25,6 +26,14 @@ import 'features/shell/app_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    return true;
+  };
+
   final apiClient = ApiClient();
   final syncEngine = SyncEngine(apiClient: apiClient);
 
@@ -61,12 +70,21 @@ class _OmniPresenceAppState extends State<OmniPresenceApp> {
   }
 
   Future<void> _checkInitialOnboardingState() async {
-    final completed = await SecureStorage.isOnboardingCompleted();
-    if (mounted) {
-      setState(() {
-        _hasCompletedOnboarding = completed;
-        _isCheckingOnboarding = false;
-      });
+    try {
+      final completed = await SecureStorage.isOnboardingCompleted();
+      if (mounted) {
+        setState(() {
+          _hasCompletedOnboarding = completed;
+          _isCheckingOnboarding = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _hasCompletedOnboarding = false;
+          _isCheckingOnboarding = false;
+        });
+      }
     }
   }
 
